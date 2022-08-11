@@ -1,0 +1,24 @@
+name: quality_check
+
+on: pull_request
+
+jobs:
+  flake8-lint:
+    runs-on: ubuntu-latest
+    name: flake8
+    steps:
+      - name: Check out source repository
+        uses: actions/checkout@v2
+      - name: Set up Python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - run: pip install pep8-naming flake8-variables-names pandas-vet flake8-isort flake8-expression-complexity flake8-bandit==2.1.2 bandit==1.7.2
+      - name: quality_check
+        uses: reviewdog/action-flake8@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          filter_mode: nofilter
+          fail_on_error: True
+          flake8_args: --max-line-length 120
