@@ -41,15 +41,7 @@ Assets 🎨
 
 La base de datos con la información que reunió el Ministerio de Educación se encuentra aquí:
 
-● Host: http://training-main.cghe7e6sfljt.us-east-1.rds.amazonaws.com
-
-● Database: training
-
-● Credenciales:
-
-db_user: alkymer
-
-db_password: alkymer123
+● A definir en el transcurso del proyecto.
 
 El archivo auxiliar de códigos postales se encuentra haciendo click aquí.
 
