@@ -2,10 +2,10 @@ SELECT
        fc.universidad AS university, 
        fc.carrera AS career,
        fc.fecha_de_inscripcion AS inscription_date,
-       SPLIT_PART(fc.name, ' ', 1) AS first_name,
-       SPLIT_PART(fc.name, ' ', 2) AS last_name,
+       fc.name AS first_name,
+       fc.name AS last_name,
        fc.sexo AS gender,
-       (CURRENT_DATE - TO_DATE(fc.fecha_nacimiento, 'YYYY/MM/DD'))/365 AS age,
+       fc.fecha_nacimiento AS age,
        fc.codigo_postal AS postal_code,
        l2.localidad AS location,
        fc.correo_electronico AS email
