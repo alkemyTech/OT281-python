@@ -12,6 +12,6 @@ SELECT
 FROM flores_comahue AS fc
 LEFT JOIN localidad2 AS l2
 ON CAST(fc.codigo_postal AS INTEGER) = l2.codigo_postal
-WHERE fecha_de_inscripcion > '2020/09/01' 
-AND fecha_de_inscripcion < '2021/02/01'
+WHERE fecha_de_inscripcion >= '2020/09/01' 
+AND fecha_de_inscripcion <= '2021/02/01'
 AND universidad like 'UNIV. NACIONAL DEL COMAHUE';
