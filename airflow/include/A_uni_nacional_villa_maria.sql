@@ -7,11 +7,11 @@
 select 
 	universidad as university, 
 	carrera as career,
-	to_date(fecha_de_inscripcion,'YY-Mon-DD') as inscription_date,
+	fecha_de_inscripcion as inscription_date,
 	null as first_name,
 	nombre as last_name,
 	sexo as gender,
-	to_date(fecha_nacimiento, 'DD-Mon-YY') as birth_day, 
+	fecha_nacimiento as birth_day, 
 	null as age,
 	null as postal_code,
 	localidad as location,
