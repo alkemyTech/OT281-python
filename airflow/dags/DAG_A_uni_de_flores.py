@@ -12,7 +12,7 @@ Sources:
 """
 
 # Import libraries
-from datetime import datetime # to set the data interval
+from datetime import datetime, timedelta
 import pandas as pd # to transform the future data from the DB
 
 # Import DAG class and Airflow Operators
@@ -21,12 +21,16 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemToS3Operator
 
 # Configure default settings to be applied to all tasks
-default_args = {} # currently set empty 
+default_args = {
+    'retries': 5,
+    'retry_delay': timedelta(seconds=5)
+} 
 
 # Instantiate DAG
 with DAG(
         dag_id='DAG_A_uni_de_flores',
         description='DAG created to make the ETL process for Universidad de Flores',
+        default_args=default_args,
         start_date=datetime(2022,8,22),
         schedule_interval='@hourly',
         catchup=False
