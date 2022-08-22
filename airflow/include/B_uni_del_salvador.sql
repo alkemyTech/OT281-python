@@ -4,7 +4,7 @@ SELECT
        svm.fecha_de_inscripcion AS inscription_date,
        svm.nombre AS last_name,
        svm.sexo AS gender,
-       svm.fecha_nacimiento as birth_day,
+       svm.fecha_nacimiento as birth_date,
        NULL AS age,
        NULL AS postal_code,
        svm.localidad AS location,

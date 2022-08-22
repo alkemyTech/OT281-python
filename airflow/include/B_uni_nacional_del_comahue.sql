@@ -4,7 +4,7 @@ SELECT
        fc.fecha_de_inscripcion AS inscription_date,
        fc.name AS last_name,
        fc.sexo AS gender,
-       fc.fecha_nacimiento AS birth_day,
+       fc.fecha_nacimiento AS birth_date,
        NULL AS age,
        fc.codigo_postal AS postal_code,
        NULL AS location,
