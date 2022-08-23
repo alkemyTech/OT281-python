@@ -1,4 +1,3 @@
-
 select
 universidad as university,
 careers,
@@ -18,4 +17,5 @@ where universidad='_universidad_de_palermo' and to_date(fecha_de_inscripcion ,'D
 
 -- The query load information from palermo_tres_de_febrero table 
 -- The where condition uses the inscription_date column but it has to been transformed in date format first
+
 

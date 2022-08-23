@@ -1,0 +1,4 @@
+airflow/dags/__pycache__/C_uni_de_palermo.cpython-39.pyc
+airflow/dags/__pycache__/C_uni_nacional_de_jujuy.cpython-39.pyc
+airflow/dags/__pycache__/dag_t1.cpython-39.pyc
+airflow/dags/test.py
