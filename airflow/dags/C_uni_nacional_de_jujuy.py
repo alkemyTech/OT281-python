@@ -48,8 +48,8 @@ def get_postgress_data():
 
 default_args={
     'owner':'airflow',
-#    'retries':5,
-#    'retry_delay':5
+    'retries':5,
+    'retry_delay':5
 }
 
 
