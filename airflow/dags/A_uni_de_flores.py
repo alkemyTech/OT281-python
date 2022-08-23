@@ -34,7 +34,7 @@ default_args = {
 
 # Instantiate DAG
 with DAG(
-        dag_id='DAG_A_uni_de_flores',
+        dag_id='A_uni_de_flores',
         description='DAG created to make the ETL process for Universidad de Flores',
         default_args=default_args,
         start_date=datetime(2022,8,22),
