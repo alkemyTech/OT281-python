@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import timedelta, datetime
+import logging as log
 
 """ ETL dag 
 --Extract data from Facultad Latinoamericana De Ciencias Sociales Postgres database
