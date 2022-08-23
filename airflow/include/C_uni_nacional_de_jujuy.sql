@@ -15,3 +15,4 @@ where university = 'universidad nacional de jujuy' and to_date(inscription_date,
 
 -- The query load information from jujuy_utn table 
 -- The where condition uses the inscription_date column but it has to been transformed in date format first
+
