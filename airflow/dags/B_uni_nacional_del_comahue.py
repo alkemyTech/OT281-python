@@ -9,6 +9,24 @@ DAG workflow:
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+import logging
+
+# Set up logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# Format
+format = logging.Formatter(
+    fmt = "%(asctime)s - %(name)s - %(message)s",
+    datefmt = "%Y-%m-%d" 
+)
+
+# Handler
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(format)
+
+# Add handler to logger
+logger.addHandler(stream_handler)
 
 
 # SQL query
