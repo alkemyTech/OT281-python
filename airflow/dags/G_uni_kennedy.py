@@ -17,7 +17,11 @@ def pandas_process_func():
 def upload_to_s3():
     pass
 
-default_args = {}
+#retry 5 times with a delay of 5 seconds
+default_args = {
+    'retries': 5,
+    'retry_delay': timedelta(seconds=5),
+}
 
 with DAG(
     'dag_kennedy_g1',
