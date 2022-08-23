@@ -10,11 +10,12 @@ from airflow.operators.dummy import DummyOperator
 with DAG(
     dag_id='C_uni_de_palermo',
     description='Dag with no operator related to Universidad de Palermo',
-    schedule_interval=timedelta(days=1),
+    schedule_interval='@hourly',
     start_date=days_ago(2),
     tags=['C_uni_de_palermo'],
 
 )  as dag_C_uni_de_palermo:
 # Set empty operator    
     empty_dag_C_uni_de_palermo= DummyOperator(task_id='C_uni_de_palermo')
-
+# The following operators could be used in the next versions to run ETL process
+#        pd_transform = PythonOperator()
