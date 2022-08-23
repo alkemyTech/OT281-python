@@ -4,7 +4,7 @@ from datetime import timedelta
 from airflow import DAG
 from airflow.utils.dates import days_ago
 # This module is used for Empty Operatos
-from airflow.operators.empty import EmptyOperator
+from airflow.operators.dummy.DummyOperator import DummyOperator
 
 #Define DAG 
 with DAG(
@@ -16,5 +16,5 @@ with DAG(
 
 )  as dag_C_uni_de_palermo:
 # Set empty operator    
-    empty_dag_C_uni_de_palermo= EmptyOperator(task_id='C_uni_nacional_de_jujuy')
+    empty_dag_C_uni_de_palermo= DummyOperator(task_id='C_uni_nacional_de_jujuy')
 
