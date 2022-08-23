@@ -10,7 +10,7 @@ select
 	null as first_name,
 	name as last_name,
 	sexo as gender,
-	fecha_nacimiento as birth_date, 
+	fecha_nacimiento as birth_day, 
 	null as age,
 	codigo_postal as postal_code,
 	null as location,
