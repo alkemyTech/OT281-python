@@ -4,7 +4,7 @@ from datetime import timedelta
 from airflow import DAG
 from airflow.utils.dates import days_ago
 # This module is used for Empty Operatos
-from airflow.operators.dummy.DummyOperator import DummyOperator
+from airflow.operators.dummy import DummyOperator
 
 #Define DAG 
 with DAG(
