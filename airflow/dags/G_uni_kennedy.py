@@ -7,6 +7,10 @@ from datetime import timedelta, datetime
 --Transform the data with pandas
 --Load the data to a AWS s3 database"""
 
+log.basicConfig(level=log.ERROR,
+                format='%(asctime)s - %(processName)s - %(message)s',
+                datefmt='%Y-%m-%d')
+
 #Postgre query
 def query():
     pass
