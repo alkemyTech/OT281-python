@@ -6,10 +6,11 @@ DAG workflow:
 - Load data into s3 bucket
 """
 
+import logging
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-import logging
+from sqlalchemy import create_engine
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -31,7 +32,16 @@ logger.addHandler(stream_handler)
 
 # SQL query
 def sql_queries():
-    pass
+
+    # Parameters
+    USER = ""
+    PASSWORD = ""
+    HOST = ""
+    DB_NAME = ""
+    url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}/{DB_NAME}"
+
+    # Create engine
+    engine = create_engine(url)
 
 
 # Pandas data wrangling
@@ -55,7 +65,9 @@ with DAG(
     
     task_sql_queries = PythonOperator(
         task_id="sql_queries", 
-        python_callable = sql_queries
+        python_callable = sql_queries,
+        retries = 5,
+        retry_delay = timedelta(senconds = 5)
     )
 
     task_pandas_data_wrangling = PythonOperator(
@@ -69,4 +81,3 @@ with DAG(
     )
 
     task_sql_queries >> task_pandas_data_wrangling >> task_load_data
-    
