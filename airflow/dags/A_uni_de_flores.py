@@ -10,6 +10,7 @@ Sources:
 - DAGs: The Definitive Guide (from Astronomer) - Please, check Wiki section from this project.
 - https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html
 - https://docs.python.org/3/library/logging.html
+- https://betterdatascience.com/apache-airflow-postgres-database/
 """
 
 # Import libraries
@@ -20,11 +21,17 @@ import logging
 # Import DAG class and Airflow Operators
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.hooks.postgres_hook import PostgresHook
 from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemToS3Operator
 
 # Configure logging and logger object
 logging.basicConfig(format='%(asctime)s - %(name)s - %(message)s', datefmt='%Y-%m-%d', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+# Functions to apply within the DAG
+def get_sql_data():
+        pg_hook = PostgresHook.get_hook(postgres_connection_id='db_universidades')
+        
 
 # Configure default settings to be applied to all tasks
 default_args = {
@@ -42,11 +49,8 @@ with DAG(
         catchup=False
 ) as dag:
         
-        # Zero task: set logging before tasks
-        dag_init_log = PythonOperator() # set empty to future stage of the project
-        
         # First task: retrieve data from Postgres Database
-        query_sql = PythonOperator() # set empty to future stage of the project
+        extract_sql = PythonOperator(task_id='extract_sql', python_callable=get_sql_data)
         
         # Second task: modify data using pandas library
         pandas_transform = PythonOperator() # set empty to future stage of the project
