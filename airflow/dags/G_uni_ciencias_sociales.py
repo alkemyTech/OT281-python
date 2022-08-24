@@ -1,11 +1,16 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import timedelta, datetime
+import logging as log
 
 """ ETL dag 
 --Extract data from Facultad Latinoamericana De Ciencias Sociales Postgres database
 --Transform the data with pandas
 --Load the data to a AWS s3 database"""
+
+log.basicConfig(level=log.ERROR,
+                format='%(asctime)s - %(processName)s - %(message)s',
+                datefmt='%Y-%m-%d')
 
 #Postgre query
 def query():
@@ -17,7 +22,11 @@ def pandas_process_func():
 def upload_to_s3():
     pass
 
-default_args = {}
+#retry 5 times with a delay of 5 seconds
+default_args = {
+    'retries': 5,
+    'retry_delay': timedelta(seconds=5),
+}
 
 with DAG(
     'dag_ciencias_sociales1_g',
