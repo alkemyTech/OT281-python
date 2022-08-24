@@ -6,15 +6,33 @@ DAG workflow:
 - Load data into s3 bucket
 """
 
+import logging
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from sqlalchemy import create_engine
 
+# Set up logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# Format
+format = logging.Formatter(
+    fmt = "%(asctime)s - %(name)s - %(message)s",
+    datefmt = "%Y-%m-%d" 
+)
+
+# Handler
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(format)
+
+# Add handler to logger
+logger.addHandler(stream_handler)
+
 
 # SQL query
 def sql_queries():
-    
+
     # Parameters
     USER = ""
     PASSWORD = ""
@@ -63,4 +81,3 @@ with DAG(
     )
 
     task_sql_queries >> task_pandas_data_wrangling >> task_load_data
-    
