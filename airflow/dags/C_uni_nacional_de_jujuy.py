@@ -55,7 +55,7 @@ default_args={
 with DAG(
     dag_id='C_uni_nacional_de_jujuy_',
     description='DAG to load data from Universiodad Nacional de Jujuy from postgress',
-    schedule_interval='@daily',
+    schedule_interval='@hourly',
     start_date=datetime(year=2022, month=8, day=22),
     default_args=default_args,
     catchup=False
