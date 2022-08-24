@@ -9,11 +9,21 @@ DAG workflow:
 from datetime import timedelta, datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from sqlalchemy import create_engine 
 
 
 # SQL query
 def sql_queries():
-    pass
+    
+    # Parameters
+    USER = ""
+    PASSWORD = ""
+    HOST = ""
+    DB_NAME = ""
+    url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}/{DB_NAME}"
+
+    # Create engine
+    engine = create_engine(url)
 
 
 # Pandas data wrangling
@@ -37,7 +47,9 @@ with DAG(
     
     task_sql_queries = PythonOperator(
         task_id="sql_queries", 
-        python_callable = sql_queries
+        python_callable = sql_queries,
+        retries = 5,
+        retry_delay = timedelta(seconds = 5)
     )
 
     task_pandas_data_wrangling = PythonOperator(
