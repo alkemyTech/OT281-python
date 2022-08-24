@@ -1,11 +1,16 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import timedelta, datetime
+import logging as log
 
 """ ETL dag 
 --Extract data from Universidad J. F. Kennedy Postgres database
 --Transform the data with pandas
 --Load the data to a AWS s3 database"""
+
+log.basicConfig(level=log.ERROR,
+                format='%(asctime)s - %(processName)s - %(message)s',
+                datefmt='%Y-%m-%d')
 
 #Postgre query
 def query():
