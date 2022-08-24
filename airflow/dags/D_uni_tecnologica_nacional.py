@@ -17,6 +17,17 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 #Time functions
 from datetime import datetime, timedelta
+#Logging
+import logging
+
+#Logger setup
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(message)s',
+    datefmt='%Y-%m-%d',
+    level=logging.DEBUG
+)
+logger = logging.getLogger(__name__)
+
 
 #Task functions
 def extract_data():
@@ -56,4 +67,4 @@ with DAG ('DAG_D_uni_tecnologica_nacional',
     )
 
     #Define the task sequence
-    task_extract_data >> task_transform_data >> task_load_data
+    task_extract_data >> task_transform_data >> task_load_data 
