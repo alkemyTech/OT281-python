@@ -12,8 +12,8 @@ from datetime import datetime, timedelta
 import logging
 
 
-logging.basicConfig(level=logging.INFO, datefmt=strftime("%Y-%m-%d"),
-                    format='%(asctime)s - %(name)s - %(message)s')      
+logging.basicConfig(level=logging.INFO, datefmt= '%Y-%m-%d',
+                    format='%(asctime)s - %(name)s - %(message)s') 
 
 
 logger = logging.getLogger('F_uni_de_moron')
