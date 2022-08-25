@@ -1,6 +1,4 @@
 from datetime import datetime
-
-
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 #from airflow.hooks.postgres_hook import PostgresHook
@@ -57,14 +55,14 @@ def get_postgress_data():
 
 default_args={
     'owner':'airflow',
-#    'retries':5,
-#    'retry_delay':5
+    'retries':5,
+    'retry_delay':5
 }
 
 with DAG(
     dag_id='C_uni_de_palermo_',
     description='DAG to load data from Universiodad Nacional de Jujuy from postgress',
-    schedule_interval='@daily',
+    schedule_interval='@hourly',
     start_date=datetime(year=2022, month=8, day=22),
     default_args=default_args,
     catchup=False
