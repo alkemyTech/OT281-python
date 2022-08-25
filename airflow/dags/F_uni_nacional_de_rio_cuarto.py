@@ -2,6 +2,8 @@
 COMO: Analista de datos
 QUIERO: Configurar los log
 PARA: Mostrarlos en consola
+QUIERO: Configurar los retries con la conexión al a base de datos
+PARA: poder intentar nuevamente si la base de datos me produce un error
 
 '''
 
