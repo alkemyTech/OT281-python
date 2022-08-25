@@ -1,5 +1,7 @@
 '''
 COMO: Analista de datos
+QUIERO: Configurar los log
+PARA: Mostrarlos en consola
 QUIERO: Configurar los retries con la conexión al a base de datos
 PARA: poder intentar nuevamente si la base de datos me produce un error
 
@@ -9,6 +11,14 @@ PARA: poder intentar nuevamente si la base de datos me produce un error
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
+import logging
+
+
+logging.basicConfig(level=logging.INFO, datefmt= '%Y-%m-%d',
+                    format='%(asctime)s - %(name)s - %(message)s')
+
+
+logger = logging.getLogger("F_uni_nacional_de_rio_cuarto")
 
 
 #Default settings applied to all tasks
