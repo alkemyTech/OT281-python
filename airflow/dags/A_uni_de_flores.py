@@ -29,8 +29,10 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(message)s', datefmt='%Y-%
 logger = logging.getLogger(__name__)
 
 # Functions to apply within the DAG
-def get_sql_data():
-        pg_hook = PostgresHook.get_hook(postgres_connection_id='db_universidades')
+def get_sql_data(query_sql):
+        pg_hook = PostgresHook.get_hook(postgres_connection_id='db_universidades_postgres')
+        logger.info('Get SQL data initialized.')
+        pg_hook.copy_expert(query_sql, filename='../files/query_sql_A.csv') # yet TBD
         
 
 # Configure default settings to be applied to all tasks
@@ -50,7 +52,12 @@ with DAG(
 ) as dag:
         
         # First task: retrieve data from Postgres Database
-        extract_sql = PythonOperator(task_id='extract_sql', python_callable=get_sql_data)
+        extract_sql = PythonOperator(
+                task_id='extract_sql',
+                python_callable=get_sql_data,
+                op_kwargs={
+                        'query_sql': f'COPY' # sentence not finished --> https://www.postgresqltutorial.com/postgresql-tutorial/export-postgresql-table-to-csv-file/
+                })
         
         # Second task: modify data using pandas library
         pandas_transform = PythonOperator() # set empty to future stage of the project
