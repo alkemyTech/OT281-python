@@ -1,6 +1,3 @@
-
-
-from datetime import datetime
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -56,8 +53,8 @@ def get_postgress_data():
 
 default_args={
     'owner':'airflow',
-#    'retries':5,
-#    'retry_delay':5
+    'retries':5,
+    'retry_delay':5
 }
 
 with DAG(

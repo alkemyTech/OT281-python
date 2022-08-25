@@ -1,7 +1,7 @@
 '''
 COMO: Analista de datos
-QUIERO: Configurar un DAG, sin consultas, ni procesamiento
-PARA: Hacer un ETL para la Universidad Nacional de Rio Cuarto.
+QUIERO: Configurar los retries con la conexión al a base de datos
+PARA: poder intentar nuevamente si la base de datos me produce un error
 
 '''
 
@@ -10,6 +10,16 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 
+
+#Default settings applied to all tasks
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 5,
+    'retry_delay': timedelta(minutes=5)
+}
 
 # SQL extraction
 def sql_query():
@@ -29,7 +39,7 @@ with DAG('F_uni_nacional_de_rio_cuarto',
          description = ' dag for Universidad de nacional de Rio Cuarto' 
          start_date=datetime(2022, 8, 23),
          schedule_interval='@hourly',
-         default_args = {},
+         default_args = default_args,
          catchup=False
         ) as dag:
 
