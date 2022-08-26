@@ -17,7 +17,7 @@ log.basicConfig(level=log.ERROR,
 
 #Postgre query
 def query():
-    pg_hook = PostgresHook(postgres_conn_id='db_universidades', schema="training")
+    pg_hook = PostgresHook(postgres_conn_id='db_universidades_postgres', schema="training")
 
     #set file name
     file_name = "G_uni_kennedy.csv"
