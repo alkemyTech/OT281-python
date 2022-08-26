@@ -1,5 +1,8 @@
+import os
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+import pandas as pd
 from datetime import timedelta, datetime
 import logging as log
 
@@ -14,7 +17,24 @@ log.basicConfig(level=log.ERROR,
 
 #Postgre query
 def query():
-    pass
+    pg_hook = PostgresHook(postgres_conn_id='db_universidades', schema="training")
+
+    #set file name
+    file_name = "G_uni_kennedy.csv"
+    
+    #set path
+    file_name_main = os.path.join(os.path.dirname(__file__), '../files/'+file_name)
+
+    #open sql file
+    j = open('OT281-python/airflow/include/G_universidad_kennedy.sql')
+    j = j.read()
+    
+    #transform query
+    sql_query = "COPY ( \n{0}\n ) TO STDOUT WITH CSV HEADER".format(j.replace(";", "")) 
+    
+    #get and save the file
+    pg_hook.copy_expert(sql_query, file_name_main)
+
 #Pandas data transformation
 def pandas_process_func():
     pass
@@ -29,7 +49,7 @@ default_args = {
 }
 
 with DAG(
-    'dag_kennedy_g1',
+    'G_uni_kennedy',
     default_args = default_args,
     description = 'DAG for Universidad J. F. Kennedy',
     schedule_interval = timedelta(hours = 1),
