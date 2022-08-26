@@ -4,7 +4,6 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.providers.postgres.operators.postgres import PostgresOperator
-from airflow.models import Variable
 
 #import logging module
 import logging
@@ -31,30 +30,28 @@ def get_postgress_data():
     #file contains the path to the sql query for this university , could be changed to a dinamic option
     file = "/home/ariel/alkemy/entorno_python3_9/OT281-python/airflow/include/C_uni_nacional_de_jujuy.sql"
     sql_query = sql_reader(file)
-    #logging.debug(f'The query is {sql_query}')
-    # SET CONN ID WITH THE AIRFLOW CONN ID 
+    logging.debug(f'The query is {sql_query}')
+    # CREATE PostgressHook instance
+    # SET CONN ID WITH THE AIRFLOW CONN ID and DDBB NAME 
     pg_hook = PostgresHook(
         postgres_conn_id='db_universidades_postgress',
         schema='training'
     )
+    #CONNECT TO THE DDBB
     pg_conn = pg_hook.get_conn()
-    #logging.debug(f'The hook params are: {postgres_conn_id} and schema {schema}')
-    cursor = pg_conn.cursor()
-    logging.debug("cursor was created successfully")
-    cursor.execute(sql_query)
-    print(cursor)
-    return cursor.fetchall()
+    # SET FILE NAME FOR CSV WITH RAW DATA
+    # PATH AND NAME SHOULD BE SET BY ARGUMENT
+    filename=r"/home/ariel/alkemy/entorno_python3_9/OT281-python/airflow/files/C_uni_nacional_de_jujuy.csv"
+    # FORMAT THE QUERY TO MAKE IT WORK WITH copy_expert
+    new_sql_query= "COPY ( "+sql_query+" ) TO STDOUT WITH CSV HEADER"    
+    # REMOVE " ; " CHAR TO GET IT WORK
+    new_sql_query=new_sql_query.replace(";","")
+    
+    # EXECUTE copy_expert TO DOWNLOAD ALL THE RAW DATA TO CSV 
+    pg_hook.copy_expert(new_sql_query,filename)
 
-def process_sql_data(ti):
-    query_retrieved = ti.xcom_pull(task_ids=['get_postgress_data'])
-    if not query_retrieved:
-        raise Exception("NO DATA LOADED")
+    return True
 
-    query_retrieved_pd = pd.DataFrame(
-        data=query_retrieved[0],
-        columns=['university','career','inscription_date' ,'last_name','gender','birth_date' ,'age','postal_code','location','email']
-    )
-    query_retrieved_pd.to_csv(Variable.get('location_C_uni_nacional_de_jujuy_csv'),index=False)
 
 default_args={
     'owner':'airflow',
@@ -76,11 +73,7 @@ with DAG(
     task_C_uni_nacional_de_jujuy_load_query = PythonOperator(
     	task_id='C_uni_nacional_de_jujuy_load_query',
     	python_callable=get_postgress_data,
-	    do_xcom_push=True
-)
-    task_download_data = PythonOperator(
-        task_id='download_data',
-        python_callable=process_sql_data
-    )
 
-    task_C_uni_nacional_de_jujuy_load_query >> task_download_data
+)
+
+    #task_C_uni_nacional_de_jujuy_load_query >> task_download_data
