@@ -62,6 +62,7 @@ def sql_queries():
 
 # Pandas data wrangling
 def data_transformation():
+
     pass
 
 
@@ -89,6 +90,7 @@ with DAG(
     task_pandas_data_wrangling = PythonOperator(
         task_id="pandas_data_wrangling",
         python_callable = data_transformation
+
     )
 
     task_load_data = PythonOperator(

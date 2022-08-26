@@ -1,15 +1,35 @@
 '''
 COMO: Analista de datos
-QUIERO: Configurar un DAG, sin consultas, ni procesamiento
-PARA: Hacer un ETL para la Universidad de Moron.
-
+QUIERO: Configurar los log
+PARA: Mostrarlos en consola
+QUIERO: Configurar los retries con la conexión al a base de datos
+PARA: poder intentar nuevamente si la base de datos me produce un error
 '''
 
 #Imports
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
+import logging
 
+
+logging.basicConfig(level=logging.INFO, datefmt= '%Y-%m-%d',
+                    format='%(asctime)s - %(name)s - %(message)s') 
+
+
+logger = logging.getLogger('F_uni_de_moron')
+
+
+
+#Default settings applied to all tasks
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 5,
+    'retry_delay': timedelta(minutes=5)
+}
 
 # SQL extraction
 def sql_query():
@@ -29,7 +49,7 @@ with DAG('F_uni_de_moron',
          description = ' dag for Universidad de Morón' 
          start_date=datetime(2022, 8, 23),
          schedule_interval='@hourly',
-         default_args = {},
+         default_args = default_args,
          catchup=False
         ) as dag:
 
