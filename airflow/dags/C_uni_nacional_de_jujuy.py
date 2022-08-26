@@ -49,7 +49,6 @@ def open_csv_to_pd():
     C_uni_nacional_de_jujuy_pd = pd.read_csv(filename)
     return True
 
-
 #Function to open the sql file and save it in a variable
 def sql_reader(file):
     # file: its the sql name with its location in string format
@@ -72,6 +71,7 @@ def get_postgress_data():
     # SET CONN ID WITH THE AIRFLOW CONN ID and DDBB NAME 
     pg_hook = PostgresHook(
         postgres_conn_id='db_universidades_postgres',
+
         schema='training'
     )
     
@@ -134,6 +134,7 @@ with DAG(
 
 # SET AIRFLOW FLOW PROCESS 
     task_C_uni_nacional_de_jujuy_load_query >> task_C_uni_nacional_de_jujuy_csv_to_pd
+
 
 
 # ==== END AIRFLOW SETTINGS ====

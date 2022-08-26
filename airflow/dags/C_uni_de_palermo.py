@@ -38,10 +38,6 @@ def open_csv_to_pd():
     C_uni_nacional_de_jujuy_pd = pd.read_csv(filename)
     return True
 
-
-
-
-
 #Create logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -77,6 +73,7 @@ def get_postgress_data():
     # SET CONN ID WITH THE AIRFLOW CONN ID and DDBB NAME 
     pg_hook = PostgresHook(
         postgres_conn_id='db_universidades_postgres',
+
         schema='training'
     )
     
@@ -103,6 +100,7 @@ def get_postgress_data():
 
 
 # ==== START AIRFLOW SETTINGS ====
+
 
 
 # Set args for DAGS
@@ -142,6 +140,7 @@ with DAG(
 
 # SET AIRFLOW FLOW PROCESS 
     task_C_uni_de_palermo_load_query >> task_C_uni_de_palermo_csv_to_pd
+
 
 
 # ==== END AIRFLOW SETTINGS ====
