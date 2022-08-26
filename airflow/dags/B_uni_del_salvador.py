@@ -9,8 +9,8 @@ import logging
 from datetime import timedelta, datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from sqlalchemy import create_engine 
-
+from airflow.hooks.postgres_hook import PostgresHook
+from pathlib import Path
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -33,15 +33,31 @@ logger.addHandler(stream_handler)
 # SQL query
 def sql_queries():
 
-    # Parameters
-    USER = ""
-    PASSWORD = ""
-    HOST = ""
-    DB_NAME = ""
-    url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}/{DB_NAME}"
+    # Filename  
+    filename = Path(
+        Path(__file__).absolute().parent.parent, 
+        "files/B_uni_del_salvador.csv"
+    )
 
-    # Create engine
-    engine = create_engine(url)
+    sql_path = Path(
+        Path(__file__).parent.parent, 
+        "include/B_uni_del_salvador.sql"
+    )
+  
+    # Read sql statement
+    with open(sql_path, "r") as file:
+       sql = file.read()
+       sql = "COPY (" + sql.replace(";", "") + ") TO STDOUT WITH CSV HEADER"
+     
+    # Define Hook
+    hook = PostgresHook(
+        postgres_conn_id = "db_universidades_postgres",
+        schema = "training"
+    )
+    
+    return hook.copy_expert(sql, filename)
+
+
 
 
 # Pandas data wrangling
