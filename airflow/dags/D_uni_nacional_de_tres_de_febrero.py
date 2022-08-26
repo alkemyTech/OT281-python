@@ -59,7 +59,9 @@ def extract_data(sql, file_path):
     """
     #Get Postgres Hook
     pg_hook = PostgresHook.get_hook(POSTGRES_CONN_ID)
-    #Create an empty .csv file in the files folder
+    #Create the files folder if not exists
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    #Create an empty .csv file in the files folder (needed for copy_expert to work)
     with open(file_path, "w") as empty_csv:
         pass
     #Read the SQL file and save the script in a string
