@@ -14,7 +14,8 @@ Sources:
 """
 
 # Import libraries
-from datetime import datetime, timedelta
+from datetime import timedelta
+import datetime
 import pandas as pd
 import logging
 from pathlib import Path
@@ -79,7 +80,7 @@ def transform_data():
         df['location'] = df['location'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
         # Create result dataframe
         result = df[['university', 'career', 'inscription_date', 'first_name', 'last_name', 'gender', 'age', 'postal_code', 'location', 'email']]
-        result.to_csv(DATASETS_TARGET)
+        return result.to_csv(DATASETS_TARGET)
 
 # Configure default settings to be applied to all tasks
 default_args = {
@@ -92,7 +93,7 @@ with DAG(
         dag_id='A_uni_de_flores',
         description='DAG created to make the ETL process for Universidad de Flores',
         default_args=default_args,
-        start_date=datetime(2022,8,26),
+        start_date=datetime.datetime(2022,8,28),
         schedule_interval='@hourly',
         catchup=False,
 ) as dag:
