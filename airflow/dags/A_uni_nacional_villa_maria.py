@@ -1,4 +1,4 @@
-"""In the present file, DAG is configured for Universidad Nacional de Villa María in order to set:
+"""In the present file, DAG is configured for Universidad Nacional de Villa Maria in order to set:
 1- Future Operators.
 2- Process data using Pandas.
 3- Upload the data to S3 (Amazon Simple Storage Service).
@@ -15,12 +15,10 @@ Sources:
 
 # Import libraries
 from datetime import datetime, timedelta
-import pandas as pd # to transform the future data from the DB
+import pandas as pd
 import logging
-
-# Configure logging and logger object
-logging.basicConfig(format='%(asctime)s - %(name)s - %(message)s', datefmt='%Y-%m-%d', level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+from pathlib import Path
+import os
 
 # Import DAG class and Airflow Operators
 from airflow import DAG
@@ -28,27 +26,60 @@ from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemToS3Operator
 
+# Configure logging and logger object
+logging.basicConfig(format='%(asctime)s - %(name)s - %(message)s', datefmt='%Y-%m-%d', level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+# Path variables
+BASE_DIR = Path(__file__).parent.parent
+INCLUDE_PATH_WITH_FILE = open(os.path.join(BASE_DIR,'include', 'A_uni_nacional_villa_maria.sql'), 'r').read().replace(';','')
+CSV_FROM_QUERY = os.path.join(BASE_DIR, 'files', 'A_uni_nacional_villa_maria.csv')
+
+
+# Functions to apply within the DAG
+def get_sql_data(query_sql):
+        """
+        The following function connects to the postgres Universidades database
+        and build a .csv from de SQL query (query_sql)
+        """
+        pg_hook = PostgresHook(postgres_conn_id = "db_universidades_postgres", schema='training')
+        logger.info('Get SQL data initialized.')
+        pg_hook.copy_expert(query_sql, filename=CSV_FROM_QUERY)
+
+def transform_data():
+        pass
+
 # Configure default settings to be applied to all tasks
 default_args = {
         'retries': 5,
         'retry_delay': timedelta(seconds=5)
-}
+} 
 
 # Instantiate DAG
 with DAG(
         dag_id='A_uni_nacional_villa_maria',
         description='DAG created to make the ETL process for Universidad Nacional de Villa María',
         default_args=default_args,
-        start_date=datetime(2022,8,22),
+        start_date=datetime(2022,8,26),
         schedule_interval='@hourly',
-        catchup=False
+        catchup=False,
 ) as dag:
-
+        
         # First task: retrieve data from Postgres Database
-        extract_sql = PythonOperator() # set empty to future stage of the project
+        extract_sql = PythonOperator(
+                task_id='extract_sql',
+                python_callable=get_sql_data,
+                op_kwargs={'query_sql': 'COPY ( '+INCLUDE_PATH_WITH_FILE+' ) TO STDOUT WITH CSV HEADER'})
         
         # Second task: modify data using pandas library
-        pandas_transform = PythonOperator() # set empty to future stage of the project
+        pandas_transform = PythonOperator(
+                task_id='pandas_transform',
+                python_callable=transform_data,
+        )
         
-        # Third task: load to S3 in Amazon
-        local_to_s3 = LocalFilesystemToS3Operator() # set empty to future stage of the project
+        """  # Third task: load to S3 in Amazon
+        local_to_s3 = LocalFilesystemToS3Operator(
+                task_id='local_to_s3',
+        ) """
+
+        extract_sql >> pandas_transform
