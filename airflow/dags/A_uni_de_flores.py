@@ -39,7 +39,6 @@ CSV_FROM_QUERY = os.path.join(BASE_DIR, 'files', f'{CSV_ROOT}.csv')
 POSTAL_CODE_TABLE = os.path.join(BASE_DIR, 'assets', 'codigos_postales.csv')
 DATASETS_TARGET = os.path.join(BASE_DIR, 'datasets', f'{CSV_ROOT}.csv')
 
-
 # Functions to apply within the DAG
 def get_sql_data(query_sql):
         """
