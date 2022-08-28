@@ -104,7 +104,7 @@ with DAG(
         dag_id='A_uni_nacional_villa_maria',
         description='DAG created to make the ETL process for Universidad Nacional de Villa María',
         default_args=default_args,
-        start_date=datetime(2022,8,25),
+        start_date=datetime.datetime(2022,8,25),
         schedule_interval='@hourly',
         catchup=False,
 ) as dag:
