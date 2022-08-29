@@ -184,26 +184,23 @@ def create_export_dataframe(original_dataframe):
 def open_csv_to_pd():
     
     # SET FILE NAME TO LO LOAD CSV WITH RAW DATA
-    file_name_csv="C_uni_de_palermo.csv"
+    file_name_csv="C_uni_nacional_de_jujuy.csv"
     # Add path to the file with the file name in str format
     filename = os.path.join(os.path.dirname(__file__), '../files/'+file_name_csv)
 
     # SET FILE NAME TO LO SAVE CSV WITH CLEAN DATA
-    file_name_csv_clean="C_uni_de_palermo.csv"
+    file_name_csv_clean="C_uni_nacional_de_jujuy.csv"
     # Add path to the file with the file name in str format
     filename_clean = os.path.join(os.path.dirname(__file__), '../datasets/'+file_name_csv_clean)
 
 
     # Open csv and transform to Dataframe
-    C_uni_de_palermo_pd = pd.read_csv(filename)
+    C_uni_nacional_de_jujuy_pd = pd.read_csv(filename)
     # Edit and transform data in DF and output a new DF
-    new_df = create_export_dataframe(C_uni_de_palermo_pd)
+    new_df = create_export_dataframe(C_uni_nacional_de_jujuy_pd)
 
     # Export to CSV
     new_df.to_csv(filename_clean)
-
-
-
     return True
 
 
@@ -217,7 +214,7 @@ def sql_reader(file):
 #Function to fetch data from Postgres 
 def get_postgress_data():
     #file contains the path to the sql query for this university 
-    file_name_sql="C_uni_de_palermo.sql"
+    file_name_sql="C_uni_nacional_de_jujuy.sql"
     # Add path to the file with the file name in str format
     file = os.path.join(os.path.dirname(__file__), '../include/'+file_name_sql)
     # Call sql_reader function to get the query in str format
@@ -236,7 +233,7 @@ def get_postgress_data():
     pg_conn = pg_hook.get_conn()
     
     # SET FILE NAME FOR CSV WITH RAW DATA
-    file_name_csv="C_uni_de_palermo.csv"
+    file_name_csv="C_uni_nacional_de_jujuy.csv"
     # Add path to the file with the file name in str format
     filename = os.path.join(os.path.dirname(__file__), '../files/'+file_name_csv)
     
@@ -266,30 +263,37 @@ default_args={
 
 # Set DAG
 with DAG(
-    dag_id='C_uni_de_palermo',
-    description='DAG for ETL process with Universidad de Palermo',
+    dag_id='C_uni_nacional_de_jujuy',
+    description='DAG for ETL process with Universidad Nacional -de -jujuy',
     schedule_interval='@hourly',
     start_date=datetime(year=2022, month=8, day=22),
     default_args=default_args,
     catchup=False
 ) as dag:
-    logger.debug("C_uni_de_palermo Starts")
+    logger.debug("C_uni_nacional_de_jujuy Starts")
     
 # Define task to query and donwload data to csv
-    task_C_uni_de_palermo_load_query = PythonOperator(
-    	task_id='C_uni_de_palermo_load_query',
+    task_C_uni_nacional_de_jujuy_load_query = PythonOperator(
+    	task_id='C_uni_nacional_de_jujuy_load_query',
     	python_callable=get_postgress_data,
     )
 # Define task to open csv and transform into DataFrame
-    task_C_uni_de_palermo_csv_to_pd = PythonOperator(
-        task_id='C_uni_de_palermo_csv_to_pd',
+    task_C_uni_nacional_de_jujuy_csv_to_pd = PythonOperator(
+        task_id='C_uni_nacional_de_jujuy_csv_to_pd',
         python_callable=open_csv_to_pd,
     )
 
-
+    #task_C_local_to_s3_job= LocalFilesystemToS3Operator(
+    #    task_id="task_C_local_to_s3_job",
+    #    filename= "..",
+    #    dest_key='AKIAS2JWQJCDKFOJLG4T',
+    #    dest_bucket='cohorte-agosto-38d749a7',
+    #    replace=True,
+    #)
 
 
 # SET AIRFLOW FLOW PROCESS 
-    task_C_uni_de_palermo_load_query >> task_C_uni_de_palermo_csv_to_pd
+    #task_C_uni_nacional_de_jujuy_load_query >> task_C_uni_nacional_de_jujuy_csv_to_pd >> task_C_local_s3_job
+    task_C_uni_nacional_de_jujuy_load_query >> task_C_uni_nacional_de_jujuy_csv_to_pd 
 
 # ==== END AIRFLOW SETTINGS ====
