@@ -1,50 +1,114 @@
 """
-1 -Configurar un DAG, sin consultas, ni procesamiento. Para Hacer un ETL para 2 universidades distintas
-2- Configurar el retry para las tareas del DAG
-3- Configurar los log
-"""
 
+1 -Configure DAG. To make an ETL for 2 different universities
+2- Configure retry for DAG tasks
+3- Configure the registry
+"""
+#Time functions
 from datetime import timedelta, datetime
+#Airflow
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+#manager Folders
+import os
+#Pandas from datafrrame
+import pandas as pd
+#Logging
 import logging
 
 
-# configuracion logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s-%(levelname)s-%(message)s', datefmt='%Y/%m/%d')
+
+# Config logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+sh = logging.StreamHandler()
+sh.setLevel(logging.DEBUG)
+#Format
+formatter = logging.Formatter('%(asctime)s-%(levelname)s-%(message)s', datefmt='%Y/%m/%d')
+# add format a sh
+sh.setFormatter(formatter)
+
+#this function open csvfile and transform
+def open_csv():
+    file_name = "H_uni_del_cine.csv"
+    filename = os.path.join(os.path.dirname(__file__),'../files/'+file_name)
+    H_uni_del_cine = pd.read_csv(filename)
+    return True
+#this function open the sqlFile
+def sql_reader(file):
+    sql_file = open(file)
+    return sql_file.read()
 
 
+#Def extract
+def extract_data ():
+    #File .sql query
+   file_sql = "H_uni_del_cine.sql"
+    #dir .sql query
+   file = os.path.join(os.path.dirname(__file__),'../include/'+file_sql)
+    #read .sql query
+   sql_query = sql_reader(file)
 
-# dag configuracion
+   logging.debug(f"The query use {sql_query}")
+
+    #PostgresHook instance
+   pg_hook = PostgresHook(
+            postgres_conn_id = 'db_universidades_postgres',
+            )
+    #conect to the db
+   pg_conn = pg_hook.get_conn()
+    #csv with raw data
+   file_name="H_uni_del_cine.csv"
+    
+   filename = os.path.join(os.path.dirname(__file__), '../files/'+file_name)
+
+   new_sql_query= "COPY ( "+sql_query+" ) TO STDOUT WITH CSV HEADER"  
+    # remove " ; " 
+   new_sql_query=new_sql_query.replace(";","")
+    # execute copy_expert
+   pg_hook.copy_expert(new_sql_query,filename)
+
+   return True
+
+
+# dag Config
 default_args={
-    'owner': 'airflow-OT281-28',
-    'retries': 5, # Esto viene de la definicion de SQL
-    'retry_delay': timedelta(seconds=5) #fer determino 5 seg
+    #"owner": "airflow-OT281-28",
+    "retries": 5, # This comes from the SQL definition
+    "retry_delay": timedelta(seconds=5) #fer 5 seg
 }
 
-#Inicializamos DAG
-with DAG('Consulta universidad UDC', 
+#Init DAG
+with DAG( 
+          dag_id='H_universidad_del_cine', 
           default_args=default_args,
           description='Consulta a la Universidad del Cine',
-          scudule_inverval=timedelta(hours=1), ## DAG se debe ejecutar cada 1 hora, todos los días
-          star_date=datetime(2022,8,19), ## HAY QUE DEFINIR LA FECHA
+          schedule_interval='@hourly', ## DAG should be run every 1 hour, every day
+          start_date=datetime(year=2022,month=8,day=19), ## YOU HAVE TO DEFINE THE DATE
+          catchup=False
          ) as dag:
 
         #0 - init Log
-        log_init = PythonOperator()
+        logger.debug("H_universidad_del_cine start")
 
         #1 - Data from postgres database
-        udc_select_query=PythonOperator(
+        udc_extract_data=PythonOperator(
+            task_id = 'extract_data_H_universidad_del_cine',
+            python_callable = extract_data
         )
            
         #2 - Transforms Data
         udc_pandas_transform=PythonOperator(
+            task_id = 'transform_data_H_universidad_del_cine',
+            python_callable = open_csv
         )
 
         #3 - Load Data
-        udc_load_data=PythonOperator(
-        )
+        #udc_load_data=PythonOperator(
+        #)
 
         #4 - The execution order of the DAG
-        udc_select_query >> udc_pandas_transform >> udc_load_data
+        udc_extract_data >> udc_pandas_transform 
+        #>> udc_load_data
