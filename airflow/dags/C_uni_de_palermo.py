@@ -182,6 +182,7 @@ def create_export_dataframe(original_dataframe):
 
 
 
+
 def upload_to_s3(filename:str,key: str, bucket_name:str) ->  None:
     hook = S3Hook('universidades_S3')
     hook.load_file(filename=filename,key=key,bucket_name=bucket_name,replace =True)
@@ -309,6 +310,7 @@ with DAG(
 
 
 # SET AIRFLOW FLOW PROCESS 
+
     task_C_uni_de_palermo_load_query >> task_C_uni_de_palermo_csv_to_pd >> task_C_local_to_s3_job
 
 # ==== END AIRFLOW SETTINGS ====
