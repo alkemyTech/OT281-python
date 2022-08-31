@@ -20,7 +20,12 @@ log.basicConfig(level=log.ERROR,
 
 #Postgre query
 def query():
-    pg_hook = PostgresHook(postgres_conn_id='db_universidades_postgres', schema="training")
+
+    try:
+        pg_hook = PostgresHook(postgres_conn_id='db_universidades_postgres', schema="training")
+    except Exception as e:
+        log.error(e)
+        raise e  
 
     #set file name
     file_name = "G_uni_kennedy.csv"
@@ -41,9 +46,13 @@ def query():
 #Pandas data transformation
 def pandas_process_func():
 
-    df = pd.read_csv("OT281-python/airflow/files/G_uni_kennedy.csv", encoding='UTF-8')
+    try:
+        df = pd.read_csv("OT281-python/airflow/files/G_uni_kennedy.csv", encoding='UTF-8')
+        cp = pd.read_csv("OT281-python/airflow/assets/codigos_postales.csv", encoding='UTF-8' )
+    except Exception as e:
+        log.error(e)
+        raise e
 
-    cp = pd.read_csv("OT281-python/airflow/assets/codigos_postales.csv", encoding='UTF-8' )
     cp.rename(columns= {'codigo_postal': 'postal_code', 'localidad': 'location'}, inplace = True)
 
     #to string and lower
@@ -99,8 +108,12 @@ def pandas_process_func():
     df['age'] = df["birthdate"].apply(lambda x: (relativedelta(datetime.now(), x).years))
 
     #creating the file
-    df.to_csv("OT281-python/airflow/datasets/G_uni_kennedy.csv")
-
+    try:
+        df.to_csv("OT281-python/airflow/datasets/G_uni_kennedy.csv")
+    except Exception as e:
+        log.error(e)
+        raise e
+        
 #Load the data to AWS
 def upload_to_s3():
     pass
