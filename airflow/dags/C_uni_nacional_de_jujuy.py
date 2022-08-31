@@ -16,12 +16,18 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.providers.postgres.operators.postgres import PostgresOperator
+
+from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemToS3Operator
+from airflow.hooks.S3_hook import S3Hook
+
+
 #import logging module
 import logging
 
 
-# ==== END LIBRARIES IMPORT ====
 
+
+# ==== END LIBRARIES IMPORT ====
 
 
 
@@ -191,7 +197,9 @@ def open_csv_to_pd():
     # SET FILE NAME TO LO SAVE CSV WITH CLEAN DATA
     file_name_csv_clean="C_uni_nacional_de_jujuy.csv"
     # Add path to the file with the file name in str format
-    filename_clean = os.path.join(os.path.dirname(__file__), '../datasets/'+file_name_csv_clean)
+    
+    #filename_clean = os.path.join(os.path.dirname(__file__), '../datasets/'+file_name_csv_clean)
+    filename_clean = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/datasets/'+file_name_csv_clean
 
 
     # Open csv and transform to Dataframe
@@ -201,7 +209,7 @@ def open_csv_to_pd():
 
     # Export to CSV
     new_df.to_csv(filename_clean)
-    return True
+    return filename_clean
 
 
 #Function to open the sql file and save it in a variable
@@ -248,6 +256,14 @@ def get_postgress_data():
 
     return True
 
+def upload_to_s3(filename:str,key: str, bucket_name:str) ->  None:
+    hook = S3Hook('s3_conn_id')
+    hook.load_file(filename=filename,key=key,bucket_name=bucket_name)
+
+
+
+
+
 # ==== END FUNCTIONS DECLARE AND SETTINGS ====
 
 
@@ -281,19 +297,37 @@ with DAG(
     task_C_uni_nacional_de_jujuy_csv_to_pd = PythonOperator(
         task_id='C_uni_nacional_de_jujuy_csv_to_pd',
         python_callable=open_csv_to_pd,
+        do_xcom_push=True
+    )
+    task_C_local_to_s3_job = PythonOperator(
+        task_id= 'task_C_local_to_s3_job'
+        python_callable=upload_to_s3,
+        op_kwargs={
+            'filename':    "{{ ti.xcom_pull(task_ids=['C_uni_nacional_de_jujuy_csv_to_pd'])  }}",
+            'key': "C_uni_nacional_de_jujuy.csv",
+            'bucket_name':'cohorte-agosto-38d749a7'
+        
+        }
     )
 
-    #task_C_local_to_s3_job= LocalFilesystemToS3Operator(
-    #    task_id="task_C_local_to_s3_job",
-    #    filename= "..",
-    #    dest_key='AKIAS2JWQJCDKFOJLG4T',
-    #    dest_bucket='cohorte-agosto-38d749a7',
-    #    replace=True,
-    #)
+
+
+
+
+
+
+#    task_C_local_to_s3_job= LocalFilesystemToS3Operator(
+#        task_id="task_C_local_to_s3_job",
+#        #filename= "{{ ti.xcom_pull(task_ids=['C_uni_nacional_de_jujuy_csv_to_pd'])  }}",
+#        filename= "/home/ariel/alkemy/entorno_python3_9/OT281-python/airflow/datasets/C_uni_nacional_de_jujuy.csv",
+#        dest_key='AKIAS2JWQJCDKFOJLG4T',
+#        dest_bucket='cohorte-agosto-38d749a7',
+#        replace=True,
+#    )
 
 
 # SET AIRFLOW FLOW PROCESS 
-    #task_C_uni_nacional_de_jujuy_load_query >> task_C_uni_nacional_de_jujuy_csv_to_pd >> task_C_local_s3_job
-    task_C_uni_nacional_de_jujuy_load_query >> task_C_uni_nacional_de_jujuy_csv_to_pd 
+    task_C_uni_nacional_de_jujuy_load_query >> task_C_uni_nacional_de_jujuy_csv_to_pd >> task_C_local_to_s3_job
+    #task_C_uni_nacional_de_jujuy_load_query >> task_C_uni_nacional_de_jujuy_csv_to_pd 
 
 # ==== END AIRFLOW SETTINGS ====
