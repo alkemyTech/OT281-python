@@ -1,5 +1,8 @@
 '''
     ETL DAG for 'Universidad Tecnológica Nacional' data
+
+    Only extraction and transformation phases are functional in this DAG right now.
+
     In this script we define the DAG structure and its tasks (represented as python functions).
     This DAG use 3 main operators, one for each task:
         - PythonOperator with PostgresHook (Extract): Used to extract raw data from Postgres Database, by executing
@@ -9,6 +12,7 @@
         - PythonOperator with S3Hook (Load): Load the dataset from transformation task into a S3 bucket.
     The DAG will be executed hourly everyday.
     In case of an error, the DAG will try to execute again up to 5 times, with a delay of 5 seconds between each one.
+    Path of generated files will be passing between tasks through Xcom variables.
 '''
 
 #Imports
@@ -17,6 +21,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+
 #Data manipulation
 import pandas as pd
 #Time functions
@@ -98,6 +103,7 @@ def transform_data(ti):
         str: Return the generated Dataset directory to the next task.
     """
     #Get the Xcom values from previous task
+
     Xcom_values = ti.xcom_pull(task_ids=['extract_data'])
     #Raise an error if not found
     if not Xcom_values:
@@ -199,6 +205,7 @@ def load_data(ti):
         replace=True
     )
     """
+
 
 #Setup DAG default arguments
 default_args = {
