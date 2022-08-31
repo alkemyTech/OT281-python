@@ -16,6 +16,8 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.hooks.S3_hook import S3Hook
+
 #import logging module
 import logging
 
@@ -180,6 +182,12 @@ def create_export_dataframe(original_dataframe):
 
 
 
+def upload_to_s3(filename:str,key: str, bucket_name:str) ->  None:
+    hook = S3Hook('s3_conn_id')
+    hook.load_file(filename=filename,key=key,bucket_name=bucket_name)
+
+
+
 # Function to open csv file and transform to Dataframe
 def open_csv_to_pd():
     
@@ -285,11 +293,21 @@ with DAG(
         task_id='C_uni_de_palermo_csv_to_pd',
         python_callable=open_csv_to_pd,
     )
+    task_C_local_to_s3_job = PythonOperator(
+        task_id= 'task_C_local_to_s3_job'
+        python_callable=upload_to_s3,
+        op_kwargs={
+            'filename':    "{{ ti.xcom_pull(task_ids=['C_uni_nacional_de_jujuy_csv_to_pd'])  }}",
+            'key': "C_uni_nacional_de_jujuy.csv",
+            'bucket_name':'cohorte-agosto-38d749a7'
+        
+        }
+    )
 
 
 
 
 # SET AIRFLOW FLOW PROCESS 
-    task_C_uni_de_palermo_load_query >> task_C_uni_de_palermo_csv_to_pd
+    task_C_uni_de_palermo_load_query >> task_C_uni_de_palermo_csv_to_pd >> task_C_local_to_s3_job
 
 # ==== END AIRFLOW SETTINGS ====
