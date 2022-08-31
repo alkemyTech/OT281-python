@@ -1,6 +1,7 @@
 '''
     ETL DAG for 'Universidad Nacional de Tres de Febrero' data
     Only the extraction phase is functional in this DAG right now.
+    The transformation task is defined but not functional yet.
     In this script we define the DAG structure and its tasks (represented as python functions).
     Ideally, this DAG will use 3 main operators in the future, one for each task:
         - PythonOperator with PostgresHook (Extract): Used to extract raw data from Postgres Database, by executing
@@ -100,11 +101,20 @@ with DAG ('D_uni_nacional_de_tres_de_febrero',
     task_extract_data = PythonOperator(
         task_id = "extract_data",
         python_callable = extract_data,
+        do_xcom_push=True,
         op_kwargs={
             "sql": PATH_EXTRACT_INPUT,
             "file_path": PATH_EXTRACT_OUTPUT
         }
     )
+    '''
+    This task transform and normalize the data from previous task
+    and it stores it in a .csv file (in the 'datasets' folder)
+    '''
+    task_transform_data = PythonOperator(
+        task_id = "transform_data",
+        python_callable = transform_data
+    )
 
     #Define the task sequence
-    task_extract_data
+    task_extract_data >> task_transform_data
