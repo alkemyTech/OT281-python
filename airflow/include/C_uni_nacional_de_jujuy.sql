@@ -1,6 +1,6 @@
 SELECT 
 university,
-career,
+career as careers,
 inscription_date ,
 nombre as last_name,
 sexo as gender,

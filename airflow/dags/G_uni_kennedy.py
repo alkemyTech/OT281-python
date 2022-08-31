@@ -3,7 +3,9 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 import pandas as pd
+
 import numpy as np
+
 from datetime import timedelta, datetime
 from dateutil.relativedelta import relativedelta
 import logging as log
@@ -21,6 +23,7 @@ log.basicConfig(level=log.ERROR,
 
 #Postgre query
 def query():
+
     DIR = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
     FILE = f'{DIR}/include/G_universidad_kennedy.sql'
 
@@ -30,6 +33,7 @@ def query():
         log.error(e)
         raise e  
 
+
     #set file name
     file_name = "G_uni_kennedy.csv"
     
@@ -37,12 +41,14 @@ def query():
     file_name_main = os.path.join(os.path.dirname(__file__), '../files/'+file_name)
 
     #open sql file
+
     try:
         j = open(FILE)
         j = j.read()
     except Exception as e:
         log.error(e)
         raise e
+
     
     #transform query
     sql_query = "COPY ( \n{0}\n ) TO STDOUT WITH CSV HEADER".format(j.replace(";", "")) 

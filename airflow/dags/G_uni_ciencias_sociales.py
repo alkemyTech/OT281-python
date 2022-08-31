@@ -19,6 +19,7 @@ log.basicConfig(level=log.ERROR,
 
 #Postgre query
 def query():
+
     DIR = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
     FILE = f'{DIR}/include/G_facultad_latinoamericana_de_ciencias_sociales.sql'
     try:
@@ -27,6 +28,7 @@ def query():
         log.error(e)
         raise e
 
+
     #set file name
     file_name = "G_uni_ciencias_sociales.csv"
     
@@ -34,7 +36,9 @@ def query():
     file_name_main = os.path.join(os.path.dirname(__file__), '../files/'+file_name)
 
     #open sql file
+
     j = open(FILE)
+
     j = j.read()
     
     #transform query
