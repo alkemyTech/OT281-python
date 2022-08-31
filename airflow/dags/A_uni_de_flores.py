@@ -39,6 +39,7 @@ CSV_FROM_QUERY = os.path.join(BASE_DIR, 'files', f'{CSV_ROOT}.csv')
 POSTAL_CODE_TABLE = os.path.join(BASE_DIR, 'assets', 'codigos_postales.csv')
 DATASETS_TARGET = os.path.join(BASE_DIR, 'datasets', f'{CSV_ROOT}.csv')
 
+
 # Functions to apply within the DAG
 def get_sql_data(query_sql):
         """
@@ -50,6 +51,7 @@ def get_sql_data(query_sql):
         pg_hook.copy_expert(query_sql, filename=CSV_FROM_QUERY)
 
 def transform_data():
+
         """
         The next function transform the .csv file produced by the SQL extraction
         and uses the postal_code file to produce a .csv file for further load.
@@ -81,6 +83,7 @@ def transform_data():
         result = df[['university', 'career', 'inscription_date', 'first_name', 'last_name', 'gender', 'age', 'postal_code', 'location', 'email']]
         return result.to_csv(DATASETS_TARGET)
 
+
 # Configure default settings to be applied to all tasks
 default_args = {
         'retries': 5,
@@ -93,6 +96,7 @@ with DAG(
         description='DAG created to make the ETL process for Universidad de Flores',
         default_args=default_args,
         start_date=datetime.datetime(2022,8,25),
+
         schedule_interval='@hourly',
         catchup=False,
 ) as dag:
@@ -115,3 +119,4 @@ with DAG(
         ) """
 
         extract_sql >> pandas_transform
+
