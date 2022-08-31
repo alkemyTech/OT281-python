@@ -19,6 +19,8 @@ log.basicConfig(level=log.ERROR,
 
 #Postgre query
 def query():
+    DIR = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
+    FILE = f'{DIR}/include/G_facultad_latinoamericana_de_ciencias_sociales.sql'
     try:
         pg_hook = PostgresHook(postgres_conn_id='db_universidades_postgres', schema="training")
     except Exception as e:
@@ -32,7 +34,7 @@ def query():
     file_name_main = os.path.join(os.path.dirname(__file__), '../files/'+file_name)
 
     #open sql file
-    j = open('OT281-python/airflow/include/G_facultad_latinoamericana_de_ciencias_sociales.sql')
+    j = open(FILE)
     j = j.read()
     
     #transform query
@@ -43,10 +45,11 @@ def query():
 
 #Pandas data transformation
 def pandas_process_func():
+    DIR = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
 
     try:
-        df = pd.read_csv("OT281-python/airflow/files/G_uni_ciencias_sociales.csv", encoding='UTF-8')
-        cp = pd.read_csv("OT281-python/airflow/assets/codigos_postales.csv", encoding='UTF-8' )
+        df = pd.read_csv(f"{DIR}/files/G_uni_ciencias_sociales.csv", encoding='UTF-8')
+        cp = pd.read_csv(f"{DIR}/assets/codigos_postales.csv", encoding='UTF-8' )
     except Exception as e:
         log.error(e)
         raise e
@@ -102,7 +105,7 @@ def pandas_process_func():
 
     #creating the file
     try:
-        df.to_csv("OT281-python/airflow/datasets/G_uni_ciencias_sociales.csv")
+        df.to_csv(f"{DIR}/datasets/G_uni_ciencias_sociales.csv")
     except Exception as e:
         log.error(e)
         raise e

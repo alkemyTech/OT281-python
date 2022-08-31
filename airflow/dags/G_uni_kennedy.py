@@ -18,8 +18,11 @@ log.basicConfig(level=log.ERROR,
                 format='%(asctime)s - %(processName)s - %(message)s',
                 datefmt='%Y-%m-%d')
 
+
 #Postgre query
 def query():
+    DIR = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
+    FILE = f'{DIR}/include/G_universidad_kennedy.sql'
 
     try:
         pg_hook = PostgresHook(postgres_conn_id='db_universidades_postgres', schema="training")
@@ -34,8 +37,12 @@ def query():
     file_name_main = os.path.join(os.path.dirname(__file__), '../files/'+file_name)
 
     #open sql file
-    j = open('OT281-python/airflow/include/G_universidad_kennedy.sql')
-    j = j.read()
+    try:
+        j = open(FILE)
+        j = j.read()
+    except Exception as e:
+        log.error(e)
+        raise e
     
     #transform query
     sql_query = "COPY ( \n{0}\n ) TO STDOUT WITH CSV HEADER".format(j.replace(";", "")) 
@@ -45,10 +52,13 @@ def query():
 
 #Pandas data transformation
 def pandas_process_func():
+    DIR = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
 
     try:
-        df = pd.read_csv("OT281-python/airflow/files/G_uni_kennedy.csv", encoding='UTF-8')
-        cp = pd.read_csv("OT281-python/airflow/assets/codigos_postales.csv", encoding='UTF-8' )
+        #df = pd.read_csv("OT281-python/airflow/files/G_uni_kennedy.csv", encoding='UTF-8')
+        df = pd.read_csv(f"{DIR}/files/G_uni_kennedy.csv", encoding='UTF-8')
+        #cp = pd.read_csv("OT281-python/airflow/assets/codigos_postales.csv", encoding='UTF-8' )
+        cp = pd.read_csv(f'{DIR}/assets/codigos_postales.csv', encoding='UTF-8')
     except Exception as e:
         log.error(e)
         raise e
@@ -109,7 +119,8 @@ def pandas_process_func():
 
     #creating the file
     try:
-        df.to_csv("OT281-python/airflow/datasets/G_uni_kennedy.csv")
+        #df.to_csv("OT281-python/airflow/datasets/G_uni_kennedy.csv")
+        df.to_csv(f"{DIR}/datasets/G_uni_kennedy.csv")
     except Exception as e:
         log.error(e)
         raise e
