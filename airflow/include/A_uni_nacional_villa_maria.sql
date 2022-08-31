@@ -11,7 +11,7 @@ select
 	null as first_name,
 	nombre as last_name,
 	sexo as gender,
-	fecha_nacimiento as birth_day, 
+	fecha_nacimiento as birth_date, 
 	null as age,
 	null as postal_code,
 	localidad as location,
