@@ -1,15 +1,12 @@
 '''
     ETL DAG for 'Universidad Tecnológica Nacional' data
-
     Only extraction and transformation phases are functional in this DAG right now.
-
     In this script we define the DAG structure and its tasks (represented as python functions).
-    This DAG use 3 main operators, one for each task:
+    Ideally, this DAG will use 3 main operators in the future, one for each task:
         - PythonOperator with PostgresHook (Extract): Used to extract raw data from Postgres Database, by executing
             the SQL scripts in the 'include' folder.
-        - PythonOperator (Transform): It is used to transform and normalize the raw data from the 
-            extraction task step with Pandas and store it in the 'datasets' folder.
-        - PythonOperator with S3Hook (Load): Load the dataset from transformation task into a S3 bucket.
+        - PythonOperator (Transform): Used to transform and normalize the raw data from last step with Pandas.
+        - LocalFilesystemToS3Operator (Load): Load the transformed data into AWS S3.
     The DAG will be executed hourly everyday.
     In case of an error, the DAG will try to execute again up to 5 times, with a delay of 5 seconds between each one.
     Path of generated files will be passing between tasks through Xcom variables.
@@ -20,8 +17,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-
 #Data manipulation
 import pandas as pd
 #Time functions
@@ -34,10 +29,6 @@ import logging
 
 #Connection id for Postgres Database
 POSTGRES_CONN_ID = "db_universidades_postgres"
-#Connection id for S3
-S3_CONN_ID = "universidades_S3"
-#Bucket name
-S3_BUCKET_NAME = "cohorte-agosto-38d749a7"
 
 #Get the root folder (project folder)
 ROOT_FOLDER = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
@@ -102,8 +93,7 @@ def transform_data(ti):
     Returns:
         str: Return the generated Dataset directory to the next task.
     """
-    #Get the Xcom values from previous task
-
+    #Get the Xcom values from previous task (ti stands for task instance)
     Xcom_values = ti.xcom_pull(task_ids=['extract_data'])
     #Raise an error if not found
     if not Xcom_values:
@@ -174,38 +164,8 @@ def transform_data(ti):
     #Return the dataset directory to the next task
     return dataset_dir
 
-def load_data(ti):
-    """
-    This methods uploads the generated dataset by transformation task into a S3 bucket.
-
-    Args:
-        ti (taskInstance): Is the previous task instance.
-            It is used to pull the dataset path from the transformation task.
-
-    Raises:
-        ValueError: Raised if can't pull Xcom value from the task instance.
-    """
-    #Get the Xcom values from previous task
-    Xcom_values = ti.xcom_pull(task_ids=['transform_data'])
-    #Raise an error if not found
-    if not Xcom_values:
-        raise ValueError("File path from transform_data task not found in XComs.")
-    #Get the file_path (should be the only Xcom value in the list)
-    file_path = Xcom_values[0]
-    
-    # -- LOADING FUNCTIONALITY TEMPORARILY DISABLED DUE TO CREDENTIAL ISSUES --
-    """
-    # Instantiate the S3 Hook
-    s3_hook = S3Hook(S3_CONN_ID)
-    # Load dataset to S3
-    s3_hook.load_file(
-        filename=file_path,
-        key=FILE_NAME + ".csv",
-        bucket_name=S3_BUCKET_NAME,
-        replace=True
-    )
-    """
-
+def load_data():
+    pass
 
 #Setup DAG default arguments
 default_args = {
@@ -240,16 +200,8 @@ with DAG ('D_uni_tecnologica_nacional',
     '''
     task_transform_data = PythonOperator(
         task_id = "transform_data",
-        python_callable = transform_data,
-        do_xcom_push=True
-    )
-    '''
-    This task load the transformed data into a S3 bucket
-    '''
-    task_load_data = PythonOperator(
-        task_id = "load_data",
-        python_callable = load_data
+        python_callable = transform_data
     )
 
     #Define the task sequence
-    task_extract_data >> task_transform_data >> task_load_data
+    task_extract_data >> task_transform_data
