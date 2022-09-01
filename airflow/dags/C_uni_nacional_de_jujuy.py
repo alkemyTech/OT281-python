@@ -1,8 +1,3 @@
-
-
-
-
-
 # ==== START LIBRARIES IMPORT ====
 
 # To manage folders and paths
@@ -236,6 +231,7 @@ def get_postgress_data():
         postgres_conn_id='db_universidades_postgres',
         schema='training'
     )
+    
     
     #CONNECT OBJECT TO THE DDBB
     pg_conn = pg_hook.get_conn()
