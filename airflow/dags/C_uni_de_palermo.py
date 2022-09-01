@@ -16,6 +16,8 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.hooks.S3_hook import S3Hook
+
 #import logging module
 import logging
 
@@ -180,6 +182,13 @@ def create_export_dataframe(original_dataframe):
 
 
 
+
+def upload_to_s3(filename:str,key: str, bucket_name:str) ->  None:
+    hook = S3Hook('universidades_S3')
+    hook.load_file(filename=filename,key=key,bucket_name=bucket_name,replace =True)
+
+
+
 # Function to open csv file and transform to Dataframe
 def open_csv_to_pd():
     
@@ -191,8 +200,8 @@ def open_csv_to_pd():
     # SET FILE NAME TO LO SAVE CSV WITH CLEAN DATA
     file_name_csv_clean="C_uni_de_palermo.csv"
     # Add path to the file with the file name in str format
-    filename_clean = os.path.join(os.path.dirname(__file__), '../datasets/'+file_name_csv_clean)
-
+    #filename_clean = os.path.join(os.path.dirname(__file__), '../datasets/'+file_name_csv_clean)
+    filename_clean = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/datasets/'+file_name_csv_clean
 
     # Open csv and transform to Dataframe
     C_uni_de_palermo_pd = pd.read_csv(filename)
@@ -204,7 +213,7 @@ def open_csv_to_pd():
 
 
 
-    return True
+    return filename_clean
 
 
 #Function to open the sql file and save it in a variable
@@ -284,12 +293,24 @@ with DAG(
     task_C_uni_de_palermo_csv_to_pd = PythonOperator(
         task_id='C_uni_de_palermo_csv_to_pd',
         python_callable=open_csv_to_pd,
+        do_xcom_push=True
+    )
+    task_C_local_to_s3_job = PythonOperator(
+        task_id= 'task_C_local_to_s3_job',
+        python_callable=upload_to_s3,
+        op_kwargs={
+            'filename':    "{{ ti.xcom_pull(task_ids='C_uni_de_palermo_csv_to_pd')  }}",
+            'key': "C_uni_de_palermo.csv",
+            'bucket_name':'cohorte-agosto-38d749a7'
+        
+        }
     )
 
 
 
 
 # SET AIRFLOW FLOW PROCESS 
-    task_C_uni_de_palermo_load_query >> task_C_uni_de_palermo_csv_to_pd
+
+    task_C_uni_de_palermo_load_query >> task_C_uni_de_palermo_csv_to_pd >> task_C_local_to_s3_job
 
 # ==== END AIRFLOW SETTINGS ====
