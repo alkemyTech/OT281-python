@@ -117,7 +117,7 @@ with DAG(
         local_to_s3 = LocalFilesystemToS3Operator(
                 task_id='local_to_s3',
                 filename=DATASETS_TARGET,
-                dest_key='AKIAS2JWQJCDKFOJLG4T',
+                dest_key=f'{CSV_ROOT}.csv',
                 dest_bucket='cohorte-agosto-38d749a7',
                 replace=True,
         )
