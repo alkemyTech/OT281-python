@@ -80,7 +80,7 @@ def data_transformation():
 
     path_to_save = Path(
         parent_path,
-        'datasets/B_uni_nacional_del_comahue.txt'
+        'datasets/B_uni_nacional_del_comahue.csv'
     )
 
     # Postal code
@@ -153,7 +153,7 @@ def data_transformation():
 
     # Drop codigo_postal and localidad columns
     merged_df = merged_df.drop(
-        ['codigo_postal', 'localidad']
+        ['codigo_postal','localidad']
         , axis = 1
     )
     

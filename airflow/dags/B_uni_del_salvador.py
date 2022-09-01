@@ -61,8 +61,6 @@ def sql_queries():
     return hook.copy_expert(sql, filename)
 
 
-
-
 # Pandas data wrangling
 def data_transformation():
     # Parent folder
@@ -81,7 +79,7 @@ def data_transformation():
 
     path_to_save = Path(
         parent_path,
-        'datasets/B_uni_del_salvador.txt'
+        'datasets/B_uni_del_salvador.csv'
     )
 
     # Postal code
@@ -103,8 +101,6 @@ def data_transformation():
         'last_name', 'location',
         'email'
     ]
-
-    # df[str_columns] = df[str_columns].astype('string')    # Object -> str
 
     df[str_columns] = df[str_columns].apply( 
         lambda x: x.str.lower()
