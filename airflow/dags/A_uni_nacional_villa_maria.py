@@ -121,9 +121,13 @@ with DAG(
                 python_callable=transform_data,
         )
         
-        """  # Third task: load to S3 in Amazon
+        # Third task: load to S3 in Amazon
         local_to_s3 = LocalFilesystemToS3Operator(
                 task_id='local_to_s3',
-        ) """
+                filename=DATASETS_TARGET,
+                dest_key=f'{CSV_ROOT}.csv',
+                dest_bucket='cohorte-agosto-38d749a7',
+                replace=True,
+        )
 
-        extract_sql >> pandas_transform
+        extract_sql >> pandas_transform >> local_to_s3
