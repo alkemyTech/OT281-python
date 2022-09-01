@@ -37,7 +37,7 @@ SELECT
 	-- Se unifica first name a last name por directivas de fer
 	nombres as last_name,
 	sexo as gender,
-	fechas_nacimiento as birthdate,
+	to_date(fechas_nacimiento, 'YY-Mon-DD') as birth_date,
 	'null' AS age,
 	codigos_postales as postal_code,
 	direcciones as location,
