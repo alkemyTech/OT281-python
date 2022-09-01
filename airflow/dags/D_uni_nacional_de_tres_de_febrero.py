@@ -9,6 +9,7 @@
         - PythonOperator with S3Hook (Load): Load the dataset from transformation task into a S3 bucket.
     The DAG will be executed hourly everyday.
     In case of an error, the DAG will try to execute again up to 5 times, with a delay of 5 seconds between each one.
+    Path of generated files will be passing between tasks through Xcom variables.
 '''
 
 #Imports
@@ -97,7 +98,7 @@ def transform_data(ti):
     Returns:
         str: Return the generated Dataset directory to the next task.
     """
-    #Get the Xcom values from previous task
+    #Get the Xcom values from previous task (ti stands for task instance)
     Xcom_values = ti.xcom_pull(task_ids=['extract_data'])
     #Raise an error if not found
     if not Xcom_values:

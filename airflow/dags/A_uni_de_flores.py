@@ -14,7 +14,8 @@ Sources:
 """
 
 # Import libraries
-from datetime import datetime, timedelta
+from datetime import timedelta
+import datetime
 import pandas as pd
 import logging
 from pathlib import Path
@@ -31,9 +32,12 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(message)s', datefmt='%Y-%
 logger = logging.getLogger(__name__)
 
 # Path variables
+CSV_ROOT = 'A_uni_de_flores'
 BASE_DIR = Path(__file__).parent.parent
-INCLUDE_PATH_WITH_FILE = open(os.path.join(BASE_DIR,'include', 'A_uni_de_flores.sql'), 'r').read().replace(';','')
-CSV_FROM_QUERY = os.path.join(BASE_DIR, 'files', 'A_uni_de_flores.csv')
+INCLUDE_PATH_WITH_FILE = open(os.path.join(BASE_DIR,'include', f'{CSV_ROOT}.sql'), 'r').read().replace(';','')
+CSV_FROM_QUERY = os.path.join(BASE_DIR, 'files', f'{CSV_ROOT}.csv')
+POSTAL_CODE_TABLE = os.path.join(BASE_DIR, 'assets', 'codigos_postales.csv')
+DATASETS_TARGET = os.path.join(BASE_DIR, 'datasets', f'{CSV_ROOT}.csv')
 
 
 # Functions to apply within the DAG
@@ -47,7 +51,38 @@ def get_sql_data(query_sql):
         pg_hook.copy_expert(query_sql, filename=CSV_FROM_QUERY)
 
 def transform_data():
-        pass
+
+        """
+        The next function transform the .csv file produced by the SQL extraction
+        and uses the postal_code file to produce a .csv file for further load.
+        This final file, is going to be saved inside datasets folder.
+        """
+        df = pd.read_csv(CSV_FROM_QUERY)
+        # Give format to original dataframe
+        df['university'] = df['university'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
+        df['career'] = df['career'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
+        df['last_name'] = df['last_name'].apply(lambda x: x.lower()).apply(lambda x: x.replace(' ',''))
+        df['gender'] = df['gender'].apply(lambda x: x.replace('F','female')).apply(lambda x: x.replace('M','male'))
+        df['age'] = datetime.date.today() - pd.to_datetime(df['birth_date']).apply(lambda x: x.date())
+        df['age'] = df['age'].apply(lambda x: x.days)/365
+        df['age'] = df['age'].astype(int)
+        df['postal_code'] = df['postal_code'].astype(str)
+        df['email'] = df['email'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
+        # Drop column location
+        df = df.drop(columns='location')
+        # Build dataframe for location and postal_code
+        location = pd.read_csv(POSTAL_CODE_TABLE)
+        location['postal_code'] = location['codigo_postal'].astype(str)
+        location['location'] = location['localidad'].astype(str)
+        location = location.drop(columns=['codigo_postal', 'localidad'],axis=1)
+        # Merge both dataframes
+        df = pd.merge(left=df, right=location, on='postal_code')
+        # Give format to new location column
+        df['location'] = df['location'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
+        # Create result dataframe
+        result = df[['university', 'career', 'inscription_date', 'first_name', 'last_name', 'gender', 'age', 'postal_code', 'location', 'email']]
+        return result.to_csv(DATASETS_TARGET)
+
 
 # Configure default settings to be applied to all tasks
 default_args = {
@@ -60,7 +95,8 @@ with DAG(
         dag_id='A_uni_de_flores',
         description='DAG created to make the ETL process for Universidad de Flores',
         default_args=default_args,
-        start_date=datetime(2022,8,26),
+        start_date=datetime.datetime(2022,8,25),
+
         schedule_interval='@hourly',
         catchup=False,
 ) as dag:
@@ -83,3 +119,4 @@ with DAG(
         ) """
 
         extract_sql >> pandas_transform
+
