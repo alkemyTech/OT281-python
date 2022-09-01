@@ -186,9 +186,6 @@ def load_data(ti):
         raise ValueError("File path from transform_data task not found in XComs.")
     #Get the file_path (should be the only Xcom value in the list)
     file_path = Xcom_values[0]
-    
-    # -- LOADING FUNCTIONALITY TEMPORARILY DISABLED DUE TO CREDENTIAL ISSUES --
-    """
     # Instantiate the S3 Hook
     s3_hook = S3Hook(S3_CONN_ID)
     # Load dataset to S3
@@ -198,7 +195,6 @@ def load_data(ti):
         bucket_name=S3_BUCKET_NAME,
         replace=True
     )
-    """
 
 #Setup DAG default arguments
 default_args = {
