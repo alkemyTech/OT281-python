@@ -8,6 +8,7 @@ import pandas as pd
 # For Time related functions
 from datetime import datetime
 # For Airflow 
+# For Airflow 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
@@ -90,7 +91,7 @@ def get_postgress_data():
 
 # Set args for DAGS
 default_args={
-    #'owner':'airflow',
+    ##'owner':'airflow',
     'retries':5,
     'retry_delay':5
 }
@@ -105,6 +106,8 @@ with DAG(
     catchup=False
 ) as dag:
     logger.debug("C_uni_nacional_de_jujuy Starts")
+    
+# Define task to query and donwload data to csv
     
 # Define task to query and donwload data to csv
     task_C_uni_nacional_de_jujuy_load_query = PythonOperator(
