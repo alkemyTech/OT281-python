@@ -1,0 +1,4 @@
+dag_id: 'uni_nacional_villa_maria'
+schedule_interval: '@hourly'
+catchup: False
+input: 'test2'

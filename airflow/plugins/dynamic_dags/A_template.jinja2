@@ -1,0 +1,26 @@
+from airflow import DAG
+from datetime import datetime
+from airflow.decorators import task
+from airflow.operators.python import PythonOperator
+from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemToS3Operator
+
+
+
+with DAG(dag_id="A_DD_{{ dag_id }}",
+    start_date=datetime(2022, 8, 28),
+    schedule_interval="{{ schedule_interval }}",
+    catchup={{ catchup or False}}) as dag:
+    
+    @task
+    def extract_sql(parameter):
+        return parameter
+    
+    @task
+    def pandas_transform(parameter):
+        return parameter
+
+    @task
+    def local_to_s3(parameter):
+        return parameter
+
+    local_to_s3(pandas_transform(extract_sql({{ input }})))
