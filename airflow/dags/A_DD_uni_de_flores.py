@@ -18,7 +18,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(message)s', datefmt='%Y-%
 logger = logging.getLogger(__name__)
 
 # Path variables
-CSV_ROOT = 'A_{{ dag_id }}'
+CSV_ROOT = 'A_uni_de_flores'
 BASE_DIR = Path(__file__).parent.parent
 INCLUDE_PATH_WITH_FILE = open(os.path.join(BASE_DIR,'include', f'{CSV_ROOT}.sql'), 'r').read().replace(';','')
 CSV_FROM_QUERY = os.path.join(BASE_DIR, 'files', f'{CSV_ROOT}.csv')
@@ -110,11 +110,11 @@ default_args = {
 } 
 
 
-with DAG(dag_id="A_DD_{{ dag_id }}",
+with DAG(dag_id="A_DD_uni_de_flores",
         default_args=default_args,
         start_date=datetime.datetime(2022, 8, 28),
-        schedule_interval="{{ schedule_interval }}",
-        catchup={{ catchup or False}}) as dag:
+        schedule_interval="@hourly",
+        catchup=False) as dag:
 
         # First task: retrieve data from Postgres Database
         extract_sql = PythonOperator(
