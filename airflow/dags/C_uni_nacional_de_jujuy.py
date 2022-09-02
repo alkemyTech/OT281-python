@@ -1,8 +1,3 @@
-
-
-
-
-
 # ==== START LIBRARIES IMPORT ====
 
 # To manage folders and paths
@@ -197,8 +192,9 @@ def open_csv_to_pd():
     # SET FILE NAME TO LO SAVE CSV WITH CLEAN DATA
     file_name_csv_clean="C_uni_nacional_de_jujuy.csv"
     # Add path to the file with the file name in str format
-
-    filename_clean = os.path.join(os.path.dirname(__file__), '../datasets/'+file_name_csv_clean)
+    
+    #filename_clean = os.path.join(os.path.dirname(__file__), '../datasets/'+file_name_csv_clean)
+    filename_clean = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/datasets/'+file_name_csv_clean
 
 
     # Open csv and transform to Dataframe
@@ -208,9 +204,7 @@ def open_csv_to_pd():
 
     # Export to CSV
     new_df.to_csv(filename_clean)
-
     return filename_clean
-
 
 
 #Function to open the sql file and save it in a variable
@@ -238,6 +232,7 @@ def get_postgress_data():
         schema='training'
     )
     
+    
     #CONNECT OBJECT TO THE DDBB
     pg_conn = pg_hook.get_conn()
     
@@ -258,8 +253,8 @@ def get_postgress_data():
     return True
 
 def upload_to_s3(filename:str,key: str, bucket_name:str) ->  None:
-    hook = S3Hook('s3_conn_id')
-    hook.load_file(filename=filename,key=key,bucket_name=bucket_name)
+    hook = S3Hook('universidades_S3')
+    hook.load_file(filename=filename,key=key,bucket_name=bucket_name,replace=True)
 
 
 
@@ -301,15 +296,18 @@ with DAG(
         do_xcom_push=True
     )
     task_C_local_to_s3_job = PythonOperator(
-        task_id= 'task_C_local_to_s3_job'
-        python_callable=upload_to_s3,
+        task_id= 'task_C_local_to_s3_job',
+        python_callable=upload_to_s3 ,
         op_kwargs={
-            'filename':    "{{ ti.xcom_pull(task_ids=['C_uni_nacional_de_jujuy_csv_to_pd'])  }}",
+            'filename':    "{{ ti.xcom_pull(task_ids='C_uni_nacional_de_jujuy_csv_to_pd')}}",
             'key': "C_uni_nacional_de_jujuy.csv",
             'bucket_name':'cohorte-agosto-38d749a7'
         
         }
     )
+
+
+
 
 
 # SET AIRFLOW FLOW PROCESS 
