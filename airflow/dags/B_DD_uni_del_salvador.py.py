@@ -40,12 +40,12 @@ def sql_queries():
     # Filename  
     filename = Path(
         Path(__file__).absolute().parent.parent, 
-        "files/B_uni_nacional_del_comahue.csv"
+        "files/B_uni_del_salvador.csv"
     )
 
     sql_path = Path(
         Path(__file__).parent.parent, 
-        "include/B_uni_nacional_del_comahue.sql"
+        "include/B_uni_del_salvador.sql"
     )
   
     # Read sql statement
@@ -70,7 +70,7 @@ def data_transformation():
     # CSV files
     path_university = Path(
         parent_path,
-        'files/B_uni_nacional_del_comahue.csv'
+        'files/B_uni_del_salvador.csv'
     )
 
     path_location = Path(
@@ -80,7 +80,7 @@ def data_transformation():
 
     path_to_save = Path(
         parent_path,
-        'datasets/B_uni_nacional_del_comahue.csv'
+        'datasets/B_uni_del_salvador.csv'
     )
 
     # Postal code
@@ -242,7 +242,8 @@ def data_transformation():
     ]
 
     merged_df[cols_of_insterest].to_csv(
-        path_to_save, encoding='UTF8'
+        path_to_save, encoding='UTF8',
+        index = False
     )
     
 
@@ -255,26 +256,26 @@ def load_data_s3():
     # File path
     file_path = os.path.join(
         Path(__file__).parent.parent,
-        'datasets/B_uni_nacional_del_comahue.csv'
+        'datasets/B_uni_del_salvador.csv'
     )
 
     # File
-    file_name = 'B_uni_nacional_del_comahue.csv'
+    files_name = 'B_uni_del_salvador.csv'
 
     # Bucket
     bucket_name = 'cohorte-agosto-38d749a7'
 
     hook.load_file(
         filename = file_path,
-        key = file_name,
+        key = files_name,
         bucket_name = bucket_name
 
     )    
 
 
 with DAG(
-    "B_uni_nacional_del_comahue",
-    description = "DAG for Uni. Nacional del Comahue",
+    "B_DD_uni_del_salvador.py",
+    description = "DAG for Universidad del Salvador",
     default_args = {},
     start_date = datetime(2022, 8, 23),
     schedule_interval = timedelta(hours=1),

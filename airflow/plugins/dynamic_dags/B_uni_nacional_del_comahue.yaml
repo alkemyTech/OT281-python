@@ -1,0 +1,8 @@
+dag_id: 'B_DD_uni_nacional_del_comahue'
+files_name: 'B_uni_nacional_del_comahue'
+bucket_name: 'cohorte-agosto-38d749a7'
+s3_conn_id: 'universidades_s3'
+schedule_interval: 'hours=1'
+catchup: False
+description: 'DAG for Uni. Nacional del Comahue'
+postgres_conn_id: 'db_universidades_postgres'
