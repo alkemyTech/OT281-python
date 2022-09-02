@@ -1,4 +1,3 @@
 dag_id: 'uni_de_flores'
 schedule_interval: '@hourly'
 catchup: False
-input: 'test1'
