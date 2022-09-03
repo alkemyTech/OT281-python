@@ -16,7 +16,7 @@ env = Environment(loader = FileSystemLoader(file_dir))
 template = env.get_template('B_template.jinja2')
 
 for file in os.listdir(file_dir):
-    if file.endswith('.yaml'):
+    if file.startswith('B') & file.endswith('.yaml'):
         with open(Path(file_dir, file), 'r') as configfile:
             # Load configurations
             config = yaml.safe_load(configfile)
