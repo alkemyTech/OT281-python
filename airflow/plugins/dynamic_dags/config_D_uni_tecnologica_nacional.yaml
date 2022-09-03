@@ -1,0 +1,5 @@
+dag_id : 'D_DD_uni_tecnologica_nacional'
+file_name : 'D_uni_tecnologica_nacional'
+DD_file_name : 'D_DD_uni_tecnologica_nacional'
+university_name : 'Universidad Tecnológica Nacional'
+dag_description : 'ETL DAG for Universidad Tecnológica Nacional data.'

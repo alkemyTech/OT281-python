@@ -1,0 +1,5 @@
+dag_id : 'D_DD_uni_nacional_de_tres_de_febrero'
+file_name : 'D_uni_nacional_de_tres_de_febrero'
+DD_file_name : 'D_DD_uni_nacional_de_tres_de_febrero'
+university_name : 'Universidad Nacional de Tres de Febrero'
+dag_description : 'ETL DAG for Universidad Nacional de Tres de Febrero data.'

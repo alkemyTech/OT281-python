@@ -6,6 +6,7 @@ import pandas as pd
 from datetime import timedelta, datetime
 import logging as log
 import numpy as np
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 
 """ ETL dag 
@@ -116,7 +117,27 @@ def pandas_process_func():
         
 #Load the data to AWS
 def upload_to_s3():
-    pass
+    """This function upload the csv file to AWS S3 DB with a S3Hook"""
+
+    log.info("Uploading cvs files")
+    DIR = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
+    #S3 Hook
+    try:
+        s3_hook = S3Hook("universidades_S3")
+    except Exception as e:
+        log.error(e)
+        raise e
+    #Load to S3
+    try:
+        s3_hook.load_file(
+            filename=f"{DIR}/datasets/G_uni_ciencias_sociales.csv",
+            key="G_uni_ciencias_sociales.csv",
+            bucket_name="cohorte-agosto-38d749a7",
+            replace=True
+        )
+    except Exception as e:
+        log.error(e)
+        raise e
 
 #retry 5 times with a delay of 5 seconds
 default_args = {
