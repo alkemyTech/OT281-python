@@ -15,7 +15,7 @@ from airflow.operators.python import PythonOperator
 #from airflow.hooks.S3_hook import S3Hook
 
 #Logs config
-logging.basicConfig(level=logging.INFO, datefmt= '%Y-%m-%d',
+logging.basicConfig(datefmt= '%Y-%m-%d',
                     format='%(asctime)s - %(name)s - %(message)s',
                     level=logging.DEBUG) 
 

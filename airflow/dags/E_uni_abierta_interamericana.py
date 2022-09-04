@@ -16,7 +16,7 @@ from airflow.operators.python import PythonOperator
 
 
 #Logs config
-logging.basicConfig(level=logging.INFO, datefmt= '%Y-%m-%d',
+logging.basicConfig(datefmt= '%Y-%m-%d',
                     format='%(asctime)s - %(name)s - %(message)s',
                     level=logging.DEBUG) 
 
