@@ -26,10 +26,10 @@ SELECT
     universities as university,
 	careers as career,
 	to_date(T0.inscription_dates, 'DD-MM-YYY') as inscription_date,
-	-- Se unifica first name a last name por directivas de fer
-	names as last_name,
+	'null' as first_name,
+	names as last_name, -- Se unifica first name a last name por directivas de fer
 	sexo as gender,
-	birth_dates as birthdate,
+	birth_dates as birth_date,
 	'null' AS age, --Se le asigna null ya que no existe esta columna en la tabla(fer)
 	'null' as postal_code, --Se le asigna null ya que no existe esta columna en la tabla(fer)
 	locations as location,
