@@ -32,7 +32,7 @@ formatter = logging.Formatter('%(asctime)s-%(levelname)s-%(message)s', datefmt='
 sh.setFormatter(formatter)
 
 
-################## Path #############################
+#Path
 current_dir = os.path.dirname(os.path.normpath(__file__))
 ROOT_FOLDER = os.path.abspath(os.path.join(current_dir, os.pardir))
 
@@ -53,7 +53,7 @@ def extract_data ():
   #File .sql query
    file_sql = "H_uni_de_buenos_aires.sql"
   #read .sql query
-   sql_query = sql_reader(f'{ROOT_FOLDER}/include/{file_sql}') #
+   sql_query = sql_reader(f'{ROOT_FOLDER}/include/{file_sql}')
 
    logging.debug(f"The query use {sql_query}")
 
@@ -128,10 +128,16 @@ def transform_data_pd(csv, csv_transform):
      ################################
     df['last_name'] = df['last_name'].apply(lambda x: x.replace('-',' ')).apply(lambda x: x.lower())
      ################################
-    current_year = datetime.now().year
+    df["birth_date"] = pd.to_datetime(df["birth_date"], format='%Y%b%d', errors='ignore')
+    df['birth_date'] = df['birth_date'].apply(    # Fix format
+         lambda x: x.split('-')[-1] + '-' + x.split('-')[-2] + '-'  + '19' + x.split('-')[-3]
+             if 
+                int(x.split('-')[-3]) > 5    
+             else 
+                 x.split('-')[-1] + '-' + x.split('-')[-2] + '-' + '20' + x.split('-')[-3])
+    df['birth_date'] = df['birth_date'].apply(lambda x: datetime.strftime(datetime.strptime(x,'%d-%b-%Y'),'%Y-%m-%d'))
     df["birth_date"] = pd.to_datetime(df["birth_date"])
-    df["birth_date"] = df["birth_date"].apply(lambda x : x - relativedelta(years=100) if x.year >= current_year else x)
-     
+
     df["age"] = ((datetime.now() - df["birth_date"]) // timedelta(days=365.2425))
 
     #################################

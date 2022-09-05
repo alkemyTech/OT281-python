@@ -34,10 +34,10 @@ SELECT
     universidades as university,
 	carreras as career,
 	fechas_de_inscripcion as inscription_date,
-	-- Se unifica first name a last name por directivas de fer
-	nombres as last_name,
+	'null' as first_name, 
+	nombres as last_name, -- Se unifica first name a last name por directivas de fer
 	sexo as gender,
-	to_date(fechas_nacimiento, 'YY-Mon-DD') as birth_date,
+	fechas_nacimiento as birth_date,
 	'null' AS age,
 	codigos_postales as postal_code,
 	direcciones as location,
