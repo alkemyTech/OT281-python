@@ -6,7 +6,7 @@ fecha_de_inscripcion as inscription_date,
 names as last_name,
 sexo as gender,
 null as age,
-birth_dates,
+birth_dates as birth_date,
 codigo_postal as postal_code,
 null as location,
 correos_electronicos as email

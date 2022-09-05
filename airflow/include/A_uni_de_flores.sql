@@ -1,8 +1,8 @@
 -- The following script retrives the necessary information related to fulfill OT281-13 story
 -- for Alkemy-DA-Python
 
--- It selects college enrolled students from Universidad de Flores from September 20' to February 21' 
-
+-- It selects college enrolled students from Universidad de Flores
+-- from September 20' to February 21' 
 select
 	universidad as university, 
 	carrera as career,
@@ -10,7 +10,7 @@ select
 	null as first_name,
 	name as last_name,
 	sexo as gender,
-	fecha_nacimiento as birth_day, 
+	fecha_nacimiento as birth_date, 
 	null as age,
 	codigo_postal as postal_code,
 	null as location,
