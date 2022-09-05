@@ -7,6 +7,8 @@ import os
 TEMPLATE_PATH = "D_template.jinja2"
 #Get the root folder (project folder)
 ROOT_FOLDER = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#Config filename prefix (used to get the right config files)
+CONFIG_FILENAME_PREFIX = "D_config"
 
 #Get file directory
 file_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,8 +19,8 @@ template = env.get_template(TEMPLATE_PATH)
 
 #Iterate through files in file directory
 for filename in os.listdir(file_dir):
-    #Open only the .yaml files (as read mode)
-    if filename.endswith(".yaml"):
+    #Open only the .yaml files that starts with CONFIG_FILENAME_PREFIX (as read mode)
+    if filename.endswith(".yaml") and filename.startswith(CONFIG_FILENAME_PREFIX):
         with open(f"{file_dir}/{filename}", "r") as configfile:
             #Load the configuration from the .yaml file
             config = yaml.safe_load(configfile)
