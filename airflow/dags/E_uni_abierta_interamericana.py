@@ -23,7 +23,6 @@ logging.basicConfig(datefmt= '%Y-%m-%d',
                     level=logging.DEBUG) 
 
 
-
 default_args = {
     'email':[''],
     'email_on_failure': False,

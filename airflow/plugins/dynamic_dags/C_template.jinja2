@@ -172,7 +172,7 @@ def create_export_dataframe(original_dataframe):
 def open_csv_to_pd():
     
     # SET FILE NAME TO LO LOAD CSV WITH RAW DATA
-    file_name_csv="C_uni_nacional_de_jujuy.csv"
+    file_name_csv="{{file_name_csvtoreplace}}"
     # Add path to the file with the file name in str format
     filename = os.path.join(os.path.dirname(__file__), '../files/'+file_name_csv)
 
@@ -204,7 +204,7 @@ def sql_reader(file):
 #Function to fetch data from Postgres 
 def get_postgress_data():
     #file contains the path to the sql query for this university 
-    file_name_sql = "C_uni_nacional_de_jujuy.sql"
+    file_name_sql = "{{file_name_sqltoreplace}}"
     # Add path to the file with the file name in str format
     file = os.path.join(os.path.dirname(__file__), '../include/'+file_name_sql)
     # Call sql_reader function to get the query in str format
@@ -223,7 +223,7 @@ def get_postgress_data():
     pg_conn = pg_hook.get_conn()
     
     # SET FILE NAME FOR CSV WITH RAW DATA
-    file_name_csv="C_uni_nacional_de_jujuy.csv"
+    file_name_csv="{{file_name_csvtoreplace}}"
     # Add path to the file with the file name in str format
     filename = os.path.join(os.path.dirname(__file__), '../files/'+file_name_csv)
     
@@ -258,13 +258,13 @@ default_args={
 
 # Set DAG
 with DAG(
-    "DD_C_uni_nacional_de_jujuy",
-    schedule_interval="@hourly",
+    "{{dag_id}}",
+    schedule_interval="{{scheduletoreplace}}",
     start_date=datetime(year=2022, month=8, day=22),
     default_args=default_args,
     catchup=False
 ) as dag:
-    logger.debug("DD_C_uni_nacional_de_jujuy")
+    logger.debug("{{dag_id}}")
     
 # Define task to query and donwload data to csv
     task_universidades_load_query = PythonOperator(
@@ -281,8 +281,8 @@ with DAG(
         task_id= 'task_C_local_to_s3_job',
         python_callable=upload_to_s3 ,
         op_kwargs={
-            'filename':    "{{ ti.xcom_pull(task_ids='universidades_csv_to_pd')}}",
-            'key': "C_uni_nacional_de_jujuy.csv",
+            'filename':    "{{"{{ ti.xcom_pull(task_ids='universidades_csv_to_pd')}}"}}",
+            'key': "{{file_name_csvtoreplace}}",
             'bucket_name':'cohorte-agosto-38d749a7'
         
         }
