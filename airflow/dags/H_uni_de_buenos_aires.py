@@ -52,6 +52,7 @@ def sql_reader(file):
 def extract_data ():
   #File .sql query
    file_sql = "H_uni_de_buenos_aires.sql"
+
   #read .sql query
    sql_query = sql_reader(f'{ROOT_FOLDER}/include/{file_sql}')
 
@@ -64,8 +65,10 @@ def extract_data ():
    #conect to the db
    pg_conn = pg_hook.get_conn()
    #csv with raw data
+
    file_name="H_uni_de_buenos_aires.csv" 
    filename = f'{ROOT_FOLDER}/files/{file_name}' #
+
    new_sql_query= "COPY ( "+sql_query+" ) TO STDOUT WITH CSV HEADER"  
     # remove " ; " 
    new_sql_query=new_sql_query.replace(";","")
@@ -190,6 +193,7 @@ with DAG(
         )
         
         #2 - Transforms Data
+
         uba_pandas_transform=PythonOperator(
             task_id = 'transform_data_H_universidad_de_buenos_aires',
             python_callable = transform_data_pd,
@@ -198,10 +202,11 @@ with DAG(
                         'csv_transform': 'H_uni_de_buenos_aires.csv'
                         }
         )
+
  
         #3 - Load Data
         #uba_load_data=PythonOperator(
         #)
 
-        uba_select_query >> uba_pandas_transform 
+        uba_select_query #>> uba_pandas_transform 
         #>> uba_load_data

@@ -1,20 +1,6 @@
-"""In the present file, DAG is configured for Universidad de Flores in order to set:
-1- Future Operators.
-2- Process data using Pandas.
-3- Upload the data to S3 (Amazon Simple Storage Service).
-Execution:
-DAG is going to be executed every our, every day.
-Sources:
-- https://www.astronomer.io/guides/airflow-sql-tutorial/
-- Airflow Documentation.
-- DAGs: The Definitive Guide (from Astronomer) - Please, check Wiki section from this project.
-- https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html
-- https://docs.python.org/3/library/logging.html
-- https://betterdatascience.com/apache-airflow-postgres-database/
-"""
-
 # Import libraries
 from datetime import timedelta
+import dateutil
 import datetime
 import pandas as pd
 import logging
@@ -49,6 +35,18 @@ def get_sql_data(query_sql):
         pg_hook = PostgresHook(postgres_conn_id = "db_universidades_postgres", schema='training')
         logger.info('Get SQL data initialized.')
         pg_hook.copy_expert(query_sql, filename=CSV_FROM_QUERY)
+
+# Age transform data function
+def age_transform(bd):
+        """
+        This function allows transforming current birth_date column format into
+        a format that generates not negative ages.
+        ##### NOT USED ON UNI DE FLORES #####
+        """
+        bd = datetime.datetime.strptime(bd, '%d-%b-%y')
+        if bd.year >= datetime.date.today().year:
+                bd = bd - dateutil.relativedelta.relativedelta(years=100)
+        return bd
 
 def transform_data():
 
@@ -104,8 +102,6 @@ def transform_data():
                 df['postal_code'] = df['postal_code_y']
         result = df[['university', 'career', 'inscription_date', 'first_name', 'last_name', 'gender', 'age', 'postal_code', 'location', 'email']]
         return result.to_csv(DATASETS_TARGET)
-        
-
 
 # Configure default settings to be applied to all tasks
 default_args = {
@@ -113,17 +109,13 @@ default_args = {
         'retry_delay': timedelta(seconds=5)
 } 
 
-# Instantiate DAG
-with DAG(
-        dag_id='A_uni_de_flores',
-        description='DAG created to make the ETL process for Universidad de Flores',
-        default_args=default_args,
-        start_date=datetime.datetime(2022,8,25),
 
-        schedule_interval='@hourly',
-        catchup=False,
-) as dag:
-        
+with DAG(dag_id="A_DD_uni_de_flores",
+        default_args=default_args,
+        start_date=datetime.datetime(2022, 8, 28),
+        schedule_interval="@hourly",
+        catchup=False) as dag:
+
         # First task: retrieve data from Postgres Database
         extract_sql = PythonOperator(
                 task_id='extract_sql',
@@ -146,4 +138,3 @@ with DAG(
         )
 
         extract_sql >> pandas_transform >> local_to_s3
-

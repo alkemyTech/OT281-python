@@ -60,6 +60,7 @@ def extract_data():
 
     logging.debug(f"The query use {sql_query}")
 
+
     # PostgresHook instance
     pg_hook = PostgresHook(
         postgres_conn_id='db_universidades_postgres',
@@ -71,6 +72,7 @@ def extract_data():
 
     filename = f'{ROOT_FOLDER}/files/{file_name}' #
 
+
     new_sql_query = "COPY ( "+sql_query+" ) TO STDOUT WITH CSV HEADER"
     # remove " ; "
     new_sql_query = new_sql_query.replace(";", "")
@@ -78,6 +80,7 @@ def extract_data():
     pg_hook.copy_expert(new_sql_query, filename)
 
     return True
+    
 ############################### DATA TRANSFORM #####################################################
 
 def transform_data_pd(csv, csv_transform):
@@ -160,6 +163,7 @@ def transform_data_pd(csv, csv_transform):
 
 
 ################## DAG CONFIG #############################
+
 default_args = {
     # "owner": "airflow-OT281-28",
     "retries": 5,  # This comes from the SQL definition
@@ -167,6 +171,7 @@ default_args = {
 }
 
 ################## DAG INIT #############################
+
 with DAG(
     dag_id='H_universidad_del_cine',
     default_args=default_args,
@@ -187,6 +192,7 @@ with DAG(
     )
 
     # 2 - Transforms Data
+
     udc_pandas_transform = PythonOperator(
        task_id='transform_data_H_universidad_del_cine',
        python_callable=transform_data_pd,
@@ -196,10 +202,13 @@ with DAG(
                         }
     )
 
+
     # 3 - Load Data
     # udc_load_data=PythonOperator(
     # )
 
     # 4 - The execution order of the DAG
+
     udc_extract_data >> udc_pandas_transform
     # >> udc_load_data
+

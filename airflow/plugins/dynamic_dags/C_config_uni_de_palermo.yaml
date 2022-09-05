@@ -1,0 +1,4 @@
+dag_id: 'DD_C_uni_de_palermo'
+file_name_csvtoreplace: 'C_uni_de_palermo.csv'
+file_name_sqltoreplace: 'C_uni_de_palermo.sql'
+scheduletoreplace: '@hourly'
