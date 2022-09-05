@@ -1,0 +1,4 @@
+dag_id: 'DD_C_uni_nacional_de_jujuy'
+file_name_csvtoreplace: 'C_uni_nacional_de_jujuy.csv'
+file_name_sqltoreplace: 'C_uni_nacional_de_jujuy.sql'
+scheduletoreplace: '@hourly'
