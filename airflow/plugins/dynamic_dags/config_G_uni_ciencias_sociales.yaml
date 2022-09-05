@@ -1,4 +1,4 @@
-dag_id: 'G_GG_uni_ciencias_sociales'
+dag_id: 'G_DD_uni_ciencias_sociales'
 description: 'DAG for Facultad Latinoamericana De Ciencias Sociales'
 sql_file_route: '/include/G_facultad_latinoamericana_de_ciencias_sociales.sql'
 file_name_config: 'G_uni_ciencias_sociales'

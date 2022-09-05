@@ -1,4 +1,4 @@
-dag_id: 'G_GG_uni_kennedy'
+dag_id: 'G_DD_uni_kennedy'
 description: 'DAG for Universidad J. F. Kennedy'
 sql_file_route: '/include/G_universidad_kennedy.sql'
 file_name_config: 'G_uni_kennedy'
