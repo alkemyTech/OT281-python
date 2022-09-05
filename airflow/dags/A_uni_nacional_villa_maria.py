@@ -69,26 +69,49 @@ def transform_data():
         """
         df = pd.read_csv(CSV_FROM_QUERY)
         # Give format to original dataframe
-        df['university'] = df['university'].apply(lambda x: x.replace('_',' ')).apply(lambda x: x.lower()).apply(lambda x: x.strip())
-        df['career'] = df['career'].apply(lambda x: x.replace('_',' ')).apply(lambda x: x.lower()).apply(lambda x: x.strip())
-        df['inscription_date'] = pd.to_datetime(df['inscription_date']).astype(str)
-        df['last_name'] = df['last_name'].apply(lambda x: x.replace('_','')).apply(lambda x: x.lower())
-        df['age'] = datetime.date.today() - pd.to_datetime(df['birth_date'].apply(age_transform)).apply(lambda x: x.date())
-        df['age'] = df['age'].apply(lambda x: x.days)/365
-        df['age'] = df['age'].astype(int)
-        df['gender'] = df['gender'].apply(lambda x: x.replace('F','female')).apply(lambda x: x.replace('M','male'))
-        df['location'] = df['location'].apply(lambda x: x.replace('_',' ')).apply(lambda x: x.lower()).apply(lambda x: x.strip())
-        df['email'] = df['email'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
-        # Apply format to location/postal_code table
-        location = pd.read_csv(POSTAL_CODE_TABLE)
-        location['postal_code'] = location['codigo_postal'].astype(str)
-        location['location'] = location['localidad'].astype(str)
-        location = location.drop(columns=['codigo_postal', 'localidad'],axis=1)
-        location['location'] = location['location'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
-        # Merge both dataframes
-        df = pd.merge(left=df, right=location, on='location')
-        # Return correct dataframe using standardized columns
-        df['postal_code'] = df['postal_code_y']
+        if CSV_ROOT == 'A_uni_de_flores':
+                df['university'] = df['university'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
+                df['career'] = df['career'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
+                df['last_name'] = df['last_name'].apply(lambda x: x.lower()).apply(lambda x: x.replace(' ',''))
+                df['gender'] = df['gender'].apply(lambda x: x.replace('F','female')).apply(lambda x: x.replace('M','male'))
+                df['age'] = datetime.date.today() - pd.to_datetime(df['birth_date']).apply(lambda x: x.date())
+                df['age'] = df['age'].apply(lambda x: x.days)/365
+                df['age'] = df['age'].astype(int)
+                df['postal_code'] = df['postal_code'].astype(str)
+                df['email'] = df['email'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
+                # Drop column location
+                df = df.drop(columns='location')
+                # Build dataframe for location and postal_code
+                location = pd.read_csv(POSTAL_CODE_TABLE)
+                location['postal_code'] = location['codigo_postal'].astype(str)
+                location['location'] = location['localidad'].astype(str)
+                location = location.drop(columns=['codigo_postal', 'localidad'],axis=1)
+                # Merge both dataframes
+                df = pd.merge(left=df, right=location, on='postal_code')
+                # Give format to new location column
+                df['location'] = df['location'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
+                
+        else:
+                df['university'] = df['university'].apply(lambda x: x.replace('_',' ')).apply(lambda x: x.lower()).apply(lambda x: x.strip())
+                df['career'] = df['career'].apply(lambda x: x.replace('_',' ')).apply(lambda x: x.lower()).apply(lambda x: x.strip())
+                df['inscription_date'] = pd.to_datetime(df['inscription_date']).astype(str)
+                df['last_name'] = df['last_name'].apply(lambda x: x.replace('_','')).apply(lambda x: x.lower())
+                df['age'] = datetime.date.today() - pd.to_datetime(df['birth_date'].apply(age_transform)).apply(lambda x: x.date())
+                df['age'] = df['age'].apply(lambda x: x.days)/365
+                df['age'] = df['age'].astype(int)
+                df['gender'] = df['gender'].apply(lambda x: x.replace('F','female')).apply(lambda x: x.replace('M','male'))
+                df['location'] = df['location'].apply(lambda x: x.replace('_',' ')).apply(lambda x: x.lower()).apply(lambda x: x.strip())
+                df['email'] = df['email'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
+                # Apply format to location/postal_code table
+                location = pd.read_csv(POSTAL_CODE_TABLE)
+                location['postal_code'] = location['codigo_postal'].astype(str)
+                location['location'] = location['localidad'].astype(str)
+                location = location.drop(columns=['codigo_postal', 'localidad'],axis=1)
+                location['location'] = location['location'].apply(lambda x: x.lower()).apply(lambda x: x.strip())
+                # Merge both dataframes
+                df = pd.merge(left=df, right=location, on='location')
+                # Return correct dataframe using standardized columns
+                df['postal_code'] = df['postal_code_y']
         result = df[['university', 'career', 'inscription_date', 'first_name', 'last_name', 'gender', 'age', 'postal_code', 'location', 'email']]
         return result.to_csv(DATASETS_TARGET)
 
