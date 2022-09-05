@@ -30,10 +30,14 @@ formatter = logging.Formatter('%(asctime)s-%(levelname)s-%(message)s', datefmt='
 # add format a sh
 sh.setFormatter(formatter)
 
+#Path
+current_dir = os.path.dirname(os.path.normpath(__file__))
+ROOT_FOLDER = os.path.abspath(os.path.join(current_dir, os.pardir))
+
 #this function open csvfile and transform
 def open_csv():
     file_name = "H_uni_de_buenos_aires.csv"
-    filename = os.path.join(os.path.dirname(__file__),'../files/'+file_name)
+    filename = os.path.join(ROOT_FOLDER,'/files/'+file_name)
     H_uni_de_buenos_aires = pd.read_csv(filename)
     return True
 
@@ -47,9 +51,9 @@ def extract_data ():
   #File .sql query
    file_sql = "H_uni_de_buenos_aires.sql"
   #dir .sql query
-   file = os.path.join(os.path.dirname(__file__),'../include/'+file_sql)
+   #file = os.path.join(ROOT_FOLDER,'/include/'+file_sql)
   #read .sql query
-   sql_query = sql_reader(file)
+   sql_query = sql_reader(f'{ROOT_FOLDER}/include/{file_sql}') #
 
    logging.debug(f"The query use {sql_query}")
 
@@ -62,7 +66,7 @@ def extract_data ():
    #csv with raw data
    file_name="H_uni_de_buenos_aires.csv"
     
-   filename = os.path.join(os.path.dirname(__file__), '../files/'+file_name)
+   filename = f'{ROOT_FOLDER}/files/{file_name}' #
 
    new_sql_query= "COPY ( "+sql_query+" ) TO STDOUT WITH CSV HEADER"  
     # remove " ; " 
@@ -101,14 +105,14 @@ with DAG(
         )
         
         #2 - Transforms Data
-        uba_pandas_transform=PythonOperator(
-          task_id = 'transform_data_H_universidad_de_buenos_aires',
-            python_callable = open_csv
-        )
+        #uba_pandas_transform=PythonOperator(
+            #task_id = 'transform_data_H_universidad_de_buenos_aires',
+            #python_callable = open_csv
+        #)
  
         #3 - Load Data
         #uba_load_data=PythonOperator(
         #)
 
-        uba_select_query >> uba_pandas_transform 
+        uba_select_query #>> uba_pandas_transform 
         #>> uba_load_data
