@@ -267,8 +267,8 @@ def load_data_s3():
     hook.load_file(
         filename = file_path,
         key = file_name,
-        bucket_name = bucket_name
-
+        bucket_name = bucket_name,
+        replace = True
     )    
 
 
