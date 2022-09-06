@@ -33,6 +33,7 @@ formatter = logging.Formatter('%(asctime)s-%(levelname)s-%(message)s', datefmt='
 sh.setFormatter(formatter)
 
 
+
 ################## Path #############################
 CURRENT_DIR = os.path.dirname(os.path.normpath(__file__))
 ROOT_FOLDER = os.path.abspath(os.path.join(CURRENT_DIR, os.pardir))
@@ -46,6 +47,7 @@ S3_CONN_ID = "universidades_S3"
 #Bucket name
 S3_BUCKET_NAME = "cohorte-agosto-38d749a7"
 
+
 #this function open the sqlFile
 def sql_reader(file):
     sql_file = open(file)
@@ -55,6 +57,7 @@ def sql_reader(file):
 def extract_data ():
   #File .sql query
    file_sql = "H_uni_de_buenos_aires.sql"
+
   #read .sql query
    sql_query = sql_reader(f'{ROOT_FOLDER}/include/{file_sql}') #
 
@@ -62,6 +65,7 @@ def extract_data ():
 
    # PostgresHook instance
    pg_hook = PostgresHook.get_hook(POSTGRES_CONN_ID)
+
 
    #csv with raw data
    file_name="H_uni_de_buenos_aires.csv" 
@@ -128,10 +132,17 @@ def transform_data_pd(csv, csv_transform):
      ################################
     df['last_name'] = df['last_name'].apply(lambda x: x.replace('-',' ')).apply(lambda x: x.lower())
      ################################
-    current_year = datetime.now().year
+
+    df["birth_date"] = pd.to_datetime(df["birth_date"], format='%Y%b%d', errors='ignore')
+    df['birth_date'] = df['birth_date'].apply(    # Fix format
+         lambda x: x.split('-')[-1] + '-' + x.split('-')[-2] + '-'  + '19' + x.split('-')[-3]
+             if 
+                int(x.split('-')[-3]) > 5    
+             else 
+                 x.split('-')[-1] + '-' + x.split('-')[-2] + '-' + '20' + x.split('-')[-3])
+    df['birth_date'] = df['birth_date'].apply(lambda x: datetime.strftime(datetime.strptime(x,'%d-%b-%Y'),'%Y-%m-%d'))
     df["birth_date"] = pd.to_datetime(df["birth_date"])
-    df["birth_date"] = df["birth_date"].apply(lambda x : x - relativedelta(years=100) if x.year >= current_year else x)
-     
+
     df["age"] = ((datetime.now() - df["birth_date"]) // timedelta(days=365.2425))
 
     #################################
@@ -156,6 +167,7 @@ def transform_data_pd(csv, csv_transform):
      #Return the dataset directory to the next task
     return dataset_dir
 
+
 ################## LOAD DATA ##########################################################################
 
 def load_data(file_name):
@@ -177,9 +189,6 @@ def load_data(file_name):
         bucket_name=S3_BUCKET_NAME,
         replace=True
     )
-
-
-
 
 ################## DAG CONFIG #############################
 
@@ -209,15 +218,16 @@ with DAG(
         )
         
         #2 - Transforms Data
+
         uba_pandas_transform=PythonOperator(
             task_id = 'transform_data_H_universidad_de_buenos_aires',
             python_callable = transform_data_pd,
             op_kwargs={
                         'csv': 'H_uni_de_buenos_aires.csv',
-                        'csv_transform': 'H_uni_de_buenos_aires.csv',
-                        'born_datefmt': '%d-%m-%Y'
+                        'csv_transform': 'H_uni_de_buenos_aires.csv'
                         }
         )
+
  
         #3 - Load Data
         uba_load_data=PythonOperator(
@@ -228,4 +238,6 @@ with DAG(
                          }
         )
 
+
         uba_select_query >> uba_pandas_transform >> uba_load_data
+

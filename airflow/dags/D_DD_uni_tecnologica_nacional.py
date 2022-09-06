@@ -1,5 +1,5 @@
 '''
-    ETL DAG for 'Universidad Nacional de Tres de Febrero' data
+    ETL DAG for 'Universidad Tecnológica Nacional' data
     In this script we define the DAG structure and its tasks (represented as python functions).
     This DAG use 3 main operators, one for each task:
         - PythonOperator with PostgresHook (Extract): Used to extract raw data from Postgres Database, by executing
@@ -9,7 +9,6 @@
         - PythonOperator with S3Hook (Load): Load the dataset from transformation task into a S3 bucket.
     The DAG will be executed hourly everyday.
     In case of an error, the DAG will try to execute again up to 5 times, with a delay of 5 seconds between each one.
-    Path of generated files will be passing between tasks through Xcom variables.
 '''
 
 #Imports
@@ -38,7 +37,7 @@ S3_BUCKET_NAME = "cohorte-agosto-38d749a7"
 #Get the root folder (project folder)
 ROOT_FOLDER = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
 #File name for this university
-FILE_NAME = "D_uni_nacional_de_tres_de_febrero"
+FILE_NAME = "D_uni_tecnologica_nacional"
 #Input path for .sql file from extraction
 PATH_EXTRACT_INPUT = ROOT_FOLDER + "/include/" + FILE_NAME + ".sql"
 #Output path for .csv file from extraction
@@ -104,7 +103,7 @@ def transform_data(ti):
     """
     #Log
     logger.info("Starting transformation task.")
-    #Get the Xcom values from previous task (ti stands for task instance)
+    #Get the Xcom values from previous task
     Xcom_values = ti.xcom_pull(task_ids=['extract_data'])
     #Raise an error if not found
     if not Xcom_values:
@@ -173,7 +172,7 @@ def transform_data(ti):
     os.makedirs(os.path.dirname(dataset_dir), exist_ok=True)
     #Store the transformed data in a .csv file in the "datasets" folder
     df.to_csv(dataset_dir)
-    
+
     #Log
     logger.info(f"Dataset successfully generated in {dataset_dir}.")
     #Return the dataset directory to the next task
@@ -220,8 +219,8 @@ default_args = {
 }
 
 #Define and configure DAG
-with DAG ('D_uni_nacional_de_tres_de_febrero',
-    description = 'ETL DAG for Universidad Nacional de Tres de Febrero.',
+with DAG ("D_DD_uni_tecnologica_nacional",
+    description = "ETL DAG for Universidad Tecnológica Nacional data.",
     start_date = datetime(2022, 8, 23),
     schedule_interval = '@hourly',
     default_args = default_args,
