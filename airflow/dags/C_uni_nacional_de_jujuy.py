@@ -7,6 +7,7 @@ import pandas as pd
 # For Time related functions
 from datetime import datetime
 # For Airflow 
+# For Airflow 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
@@ -215,7 +216,7 @@ def get_postgress_data():
     # CREATE PostgressHook instance
     # SET CONN ID WITH THE AIRFLOW CONN ID and DDBB NAME 
     pg_hook = PostgresHook(
-        postgres_conn_id='db_universidades_postgres',
+        postgres_conn_id='db_universidades_postgress',
         schema='training'
     )
     
@@ -251,7 +252,7 @@ def upload_to_s3(filename:str,key: str, bucket_name:str) ->  None:
 
 # Set args for DAGS
 default_args={
-    #'owner':'airflow',
+    ##'owner':'airflow',
     'retries':5,
     'retry_delay':5
 }
