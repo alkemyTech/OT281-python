@@ -66,6 +66,8 @@ def extract_data(sql, file_path):
     Returns:
         str: The .csv file path.
     """
+    #Log
+    logger.info("Starting extraction task.")
     #Get Postgres Hook
     pg_hook = PostgresHook.get_hook(POSTGRES_CONN_ID)
     #Create the files folder if not exists
@@ -81,6 +83,8 @@ def extract_data(sql, file_path):
     copy_query = "COPY (\n{0}\n) TO STDOUT WITH CSV HEADER".format(SQL_script.replace(';', ''))
     #Execute the SQL query and save the result into the .csv file
     pg_hook.copy_expert(copy_query, filename=file_path)
+    #Log
+    logger.info(f"SQL file successfully generated in {file_path}.")
     #Return the generated .csv file path for the next task
     return file_path
 
@@ -98,10 +102,14 @@ def transform_data(ti):
     Returns:
         str: Return the generated Dataset directory to the next task.
     """
+    #Log
+    logger.info("Starting transformation task.")
     #Get the Xcom values from previous task
     Xcom_values = ti.xcom_pull(task_ids=['extract_data'])
     #Raise an error if not found
     if not Xcom_values:
+        #Log
+        logger.error("File path from extract_data task not found in XComs.")
         raise ValueError("File path from extract_data task not found in XComs.")
     #Get the file_path (should be the only Xcom value in the list)
     file_path = Xcom_values[0]
@@ -165,7 +173,9 @@ def transform_data(ti):
     os.makedirs(os.path.dirname(dataset_dir), exist_ok=True)
     #Store the transformed data in a .csv file in the "datasets" folder
     df.to_csv(dataset_dir)
-    
+
+    #Log
+    logger.info(f"Dataset successfully generated in {dataset_dir}.")
     #Return the dataset directory to the next task
     return dataset_dir
 
@@ -180,10 +190,14 @@ def load_data(ti):
     Raises:
         ValueError: Raised if can't pull Xcom value from the task instance.
     """
+    #Log
+    logger.info("Starting loading task.")
     #Get the Xcom values from previous task
     Xcom_values = ti.xcom_pull(task_ids=['transform_data'])
     #Raise an error if not found
     if not Xcom_values:
+        #Log
+        logger.error("File path from transform_data task not found in XComs.")
         raise ValueError("File path from transform_data task not found in XComs.")
     #Get the file_path (should be the only Xcom value in the list)
     file_path = Xcom_values[0]
@@ -196,6 +210,8 @@ def load_data(ti):
         bucket_name=S3_BUCKET_NAME,
         replace=True
     )
+    #Log
+    logger.info(f"File successfully loaded to {S3_BUCKET_NAME} with key {FILE_NAME + '.csv'}.")
 
 #Setup DAG default arguments
 default_args = {

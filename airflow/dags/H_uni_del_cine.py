@@ -5,8 +5,6 @@
 3- Configure the registry
 """
 
-
-
 # Time functions
 from datetime import timedelta, datetime
 # Airflow
@@ -14,6 +12,7 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+
 # manager Folders
 import os
 # Pandas from datafrrame
@@ -36,6 +35,7 @@ formatter = logging.Formatter(
 sh.setFormatter(formatter)
 
 # Path
+
 CURRENT_DIR = os.path.dirname(os.path.normpath(__file__))
 ROOT_FOLDER = os.path.abspath(os.path.join(CURRENT_DIR, os.pardir))
 FILE_NAME = 'H_uni_del_cine'
@@ -54,12 +54,15 @@ def sql_reader(file):
     return sql_file.read()
 
 
+
 ############################### DATA EXTRACT #####################################################
+
 def extract_data():
     # File .sql query
     file_sql = "H_uni_del_cine.sql"
     # read .sql query
     sql_query = sql_reader(f'{ROOT_FOLDER}/include/{file_sql}')
+
     logging.debug(f"The query use {sql_query}")
     # PostgresHook instance
     pg_hook = PostgresHook.get_hook(POSTGRES_CONN_ID)
@@ -73,6 +76,7 @@ def extract_data():
     pg_hook.copy_expert(new_sql_query, filename)
 
     return True
+
 ############################### DATA TRANSFORM #####################################################
 
 def transform_data_pd(csv, csv_transform):
@@ -154,6 +158,7 @@ def transform_data_pd(csv, csv_transform):
     return dataset_dir
 
 
+
 ################## LOAD DATA ##########################################################################
 
 def load_data(file_name):
@@ -177,6 +182,7 @@ def load_data(file_name):
     )
 
 ################## DAG CONFIG #############################
+
 default_args = {
     # "owner": "airflow-OT281-28",
     "retries": 5,  # This comes from the SQL definition
@@ -184,6 +190,7 @@ default_args = {
 }
 
 ################## DAG INIT #############################
+
 with DAG(
     dag_id='H_universidad_del_cine',
     default_args=default_args,
@@ -213,6 +220,7 @@ with DAG(
                         }
     )
 
+
     # 3 - Load Data
     udc_load_data=PythonOperator(
                   task_id='load_data_H_universidad_del_cine',
@@ -225,3 +233,4 @@ with DAG(
 
     # 4 - The execution order of the DAG
     udc_extract_data >> udc_pandas_transform >> udc_load_data
+
