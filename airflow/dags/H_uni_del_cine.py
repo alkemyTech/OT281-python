@@ -4,12 +4,15 @@
 2- Configure retry for DAG tasks
 3- Configure the registry
 """
+
 # Time functions
 from datetime import timedelta, datetime
 # Airflow
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+
 # manager Folders
 import os
 # Pandas from datafrrame
@@ -32,26 +35,28 @@ formatter = logging.Formatter(
 sh.setFormatter(formatter)
 
 # Path
-current_dir = os.path.dirname(os.path.normpath(__file__))
-ROOT_FOLDER = os.path.abspath(os.path.join(current_dir, os.pardir))
+
+CURRENT_DIR = os.path.dirname(os.path.normpath(__file__))
+ROOT_FOLDER = os.path.abspath(os.path.join(CURRENT_DIR, os.pardir))
 FILE_NAME = 'H_uni_del_cine'
 
+#Conexion
+#Connection id for Postgres Database
+POSTGRES_CONN_ID = "db_universidades_postgres"
+#Connection id for S3
+S3_CONN_ID = "universidades_S3"
+#Bucket name
+S3_BUCKET_NAME = "cohorte-agosto-38d749a7"
 
-# this function open csvfile and transform
-def open_csv():
-    file_name = "H_uni_del_cine.csv"
-    filename = os.path.join(ROOT_FOLDER, '../files/'+file_name)
-    H_uni_del_cine = pd.read_csv(filename)
-    return True
 # this function open the sqlFile
-
-
 def sql_reader(file):
     sql_file = open(file)
     return sql_file.read()
 
 
-# Def extract
+
+############################### DATA EXTRACT #####################################################
+
 def extract_data():
     # File .sql query
     file_sql = "H_uni_del_cine.sql"
@@ -59,19 +64,10 @@ def extract_data():
     sql_query = sql_reader(f'{ROOT_FOLDER}/include/{file_sql}')
 
     logging.debug(f"The query use {sql_query}")
-
-
     # PostgresHook instance
-    pg_hook = PostgresHook(
-        postgres_conn_id='db_universidades_postgres',
-    )
-    # conect to the db
-    pg_conn = pg_hook.get_conn()
-    # csv with raw data
-    file_name = "H_uni_del_cine.csv"
+    pg_hook = PostgresHook.get_hook(POSTGRES_CONN_ID)
 
-    filename = f'{ROOT_FOLDER}/files/{file_name}' #
-
+    filename = f'{ROOT_FOLDER}/files/{FILE_NAME}.csv' #
 
     new_sql_query = "COPY ( "+sql_query+" ) TO STDOUT WITH CSV HEADER"
     # remove " ; "
@@ -80,7 +76,7 @@ def extract_data():
     pg_hook.copy_expert(new_sql_query, filename)
 
     return True
-    
+
 ############################### DATA TRANSFORM #####################################################
 
 def transform_data_pd(csv, csv_transform):
@@ -162,6 +158,29 @@ def transform_data_pd(csv, csv_transform):
     return dataset_dir
 
 
+
+################## LOAD DATA ##########################################################################
+
+def load_data(file_name):
+    """Upload a file to an S3 bucket
+     Args:
+         file_name (str): File to upload
+         object_name (str): S3 object name. If not specified then file_name is used
+    return True if file was uploaded, else False
+     """
+
+    #Get the file_path (should be the only Xcom value in the list)
+    file_path = ROOT_FOLDER + "/datasets/" + file_name
+    # Instantiate the S3 Hook
+    s3_hook = S3Hook(S3_CONN_ID)
+    # Load dataset to S3
+    s3_hook.load_file(
+        filename=file_path,
+        key=FILE_NAME + ".csv",
+        bucket_name=S3_BUCKET_NAME,
+        replace=True
+    )
+
 ################## DAG CONFIG #############################
 
 default_args = {
@@ -192,7 +211,6 @@ with DAG(
     )
 
     # 2 - Transforms Data
-
     udc_pandas_transform = PythonOperator(
        task_id='transform_data_H_universidad_del_cine',
        python_callable=transform_data_pd,
@@ -204,11 +222,15 @@ with DAG(
 
 
     # 3 - Load Data
-    # udc_load_data=PythonOperator(
-    # )
+    udc_load_data=PythonOperator(
+                  task_id='load_data_H_universidad_del_cine',
+                  python_callable=load_data,
+                      op_kwargs={
+                         'file_name': 'H_uni_del_cine.csv'
+                         }
+
+     )
 
     # 4 - The execution order of the DAG
-
-    udc_extract_data >> udc_pandas_transform
-    # >> udc_load_data
+    udc_extract_data >> udc_pandas_transform >> udc_load_data
 
