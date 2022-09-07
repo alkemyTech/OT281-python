@@ -12,6 +12,7 @@ from datetime import timedelta, datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
+from airflow.hooks.S3_hook import S3Hook
 from pathlib import Path
 import os
 
@@ -209,7 +210,28 @@ def data_transformation():
 
 # Load data into s3
 def load_data_s3():
-    pass
+
+    # S3 Hook
+    hook = S3Hook('universidades_s3')
+    
+    # File path
+    file_path = os.path.join(
+        Path(__file__).parent.parent,
+        'datasets/B_uni_del_salvador.csv'
+    )
+
+    # File
+    file_name = 'B_uni_del_salvador.csv'
+
+    # Bucket
+    bucket_name = 'cohorte-agosto-38d749a7'
+
+    hook.load_file(
+        filename = file_path,
+        key = file_name,
+        bucket_name = bucket_name,
+        replace = True
+    )    
 
 
 with DAG(
