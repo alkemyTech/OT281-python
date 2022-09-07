@@ -7,7 +7,7 @@ sexo as gender,
 null as age,
 fechas_nacimiento as birth_date,
 null as postal_code,
-direcciones as location,
+localidad as location,
 email  
 from rio_cuarto_interamericana rci 
 where univiersities  = 'Universidad-nacional-de-río-cuarto' 
