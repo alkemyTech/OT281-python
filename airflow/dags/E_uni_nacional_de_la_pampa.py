@@ -9,6 +9,7 @@
 from datetime import timedelta, datetime
 import logging
 import os
+import pandas as pd
 
 from airflow import DAG
 
@@ -16,10 +17,12 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 #from airflow.hooks.S3_hook import S3Hook
 
+
 #Logs config
 logging.basicConfig(datefmt= '%Y-%m-%d',
                     format='%(asctime)s - %(name)s - %(message)s',
                     level=logging.DEBUG) 
+
 
 default_args = {
     'email':[''],
@@ -38,14 +41,12 @@ def sql_query():
     sql_file = sql_file.read()
     sql_file = "COPY (" + sql_file.replace(";", "") + ") TO STDOUT WITH CSV HEADER"
 
-
     #Hook Creation and Connection with Postgress
     hook = PostgresHook(
         postgres_conn_id='db_universidades_postgres',
         schema='training'
     )
     logging.info("SQL succesfully extract")    
-
 
     #Export raw data in CSV format to the "files" directory
     filename_csv="E_uni_nacional_de_la_pampa.csv"
@@ -56,10 +57,53 @@ def sql_query():
 
 #Transform data with pandas
 def transform_data():
-    pass
+        #Get the raw data
+    file_csv="E_uni_nacional_de_la_pampa.csv"
+    filename = os.path.join(os.path.dirname(os.path.normpath(__file__)).rstrip('/dags'), 'files/'+file_csv)
+    df_original = pd.read_csv(filename, encoding='UTF-8')
+
+        #Convert strings to lower case and normalize
+    df_original['university'] = df_original['university'].apply(str).apply(lambda x: x.lower().strip())
+    df_original['career'] = df_original['career'].apply(str).apply(lambda x: x.lower().strip())
+    df_original['first_name'] = df_original['first_name'].apply(str).apply(lambda x: x.lower().replace('mrs. ','').replace('mr. ','').strip())
+    df_original['postal_code'] = df_original['postal_code'].apply(str).apply(lambda x: x.lower().strip())
+    df_original['email'] = df_original['email'].apply(str).apply(lambda x: x.lower().strip())
+
+        #Gender to Male and Female
+    df_original['gender'] = df_original['gender'].apply(str).apply(lambda x: x.lower().strip().replace('m','male')).apply(lambda x: x.replace('f','female'))
+        
+        #First_name and Last_name
+    df_original['last_name'] = df_original['first_name'].apply(lambda x: x.split()[1])
+    df_original['first_name'] = df_original['first_name'].apply(lambda x: x.split()[0])
+
+
+        #Inscription_date to %Y-%m-%d format as string format
+    df_original["inscription_date"] = pd.to_datetime(df_original["inscription_date"], format='%d/%m/%Y')
+    df_original["inscription_date"] = pd.to_datetime(df_original["inscription_date"].astype(str), format='%Y-%m-%d')
+    df_original["inscription_date"] = df_original["inscription_date"].astype(str)
+
+
+        #Calculate int Age from birth_date
+    df_original["birth_date"] = pd.to_datetime(df_original["birth_date"], format='%d/%m/%Y')
+    df_original["age"] = df_original['birth_date'].apply(lambda x: (datetime.today() - x).days//365)
+        
+        #Merge df_original with df_locations by postal_code
+    df_locations=pd.read_csv(os.path.join(os.path.dirname(os.path.normpath(__file__)).rstrip('/dags'), 'assets/'+"codigos_postales.csv"), encoding='UTF-8')
+    df_locations["location"] = df_locations["localidad"].astype(str)
+    df_locations["postal_code"] = df_locations["codigo_postal"].astype(str)
+    df_locations = df_locations.drop(columns=["localidad", "codigo_postal"], axis=1)
+
+    df_merged = pd.merge(left= df_original, right=df_locations, on='postal_code')
+
+    df_original['location'] = df_merged['location_y'].apply(str).apply(lambda x: x.lower().strip())
+    df_original = df_original.drop("birth_date", axis=1)
+
+        #Export df_original to CSV
+    DIR = os.path.join(os.path.dirname(os.path.normpath(__file__)).rstrip('/dags'),'datasets/')
+    df_original.to_csv(DIR+'E_uni_nacional_de_la_pampa.csv', index=False, encoding='UTF-8')
 
 #Upload data to AWS S3
-def upload_to_s3(filename: str, key: str, bucket_name: str):
+def upload_to_s3():
     pass
 
 
