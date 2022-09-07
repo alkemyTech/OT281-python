@@ -7,7 +7,7 @@ sexo as gender,
 null as age,
 nacimiento as birth_date,
 codgoposstal as postal_code,
-direccion as location,
+null as location,
 eemail as email
 from moron_nacional_pampa mnp
 where universidad = 'Universidad de morón' 

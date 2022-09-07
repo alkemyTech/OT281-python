@@ -1,0 +1,5 @@
+dag_id : 'H_uni_del_cine'
+file_name : 'H_uni_del_cine'
+DD_file_name : 'H_DD_uni_del_cine'
+university_name : 'Universidad del Cine'
+dag_description : 'ETL DAG for Universidad del Cine'
