@@ -1,5 +1,10 @@
+#Id to identify the DAG inside Airflow
 dag_id : 'D_DD_uni_tecnologica_nacional'
+#Filename used when stored as a normal DAG (not dynamic)
 file_name : 'D_uni_tecnologica_nacional'
+#Filename used when stored as a Dynamic DAG
 DD_file_name : 'D_DD_uni_tecnologica_nacional'
+#University name
 university_name : 'Universidad Tecnológica Nacional'
+#Description of the DAG
 dag_description : 'ETL DAG for Universidad Tecnológica Nacional data.'
