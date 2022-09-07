@@ -44,6 +44,9 @@ default_args = {
 
 # SQL extraction
 def sql_query():
+    '''
+    This function gets data from Postgres DB and stores it as a .csv in /file folder according to the sql query
+    '''
     pg_hook= PostgresHook.get_hook(POSTGRES_CONN_ID)
    
     #Log
