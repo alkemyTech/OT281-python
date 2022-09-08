@@ -1,0 +1,5 @@
+dag_id : 'H_uni_de_buenos_aires'
+file_name : 'H_uni_de_buenos_aires'
+DD_file_name : 'H_DD_uni_de_buenos_aires'
+university_name : 'Universidad de Buenos Aires'
+dag_description : 'ETL DAG for Universidad de Buenos Aires'

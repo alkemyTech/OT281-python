@@ -18,11 +18,13 @@ from pathlib import Path
 import pandas as pd
 
 
+
 #Connection id for Postgres Database
 POSTGRES_CONN_ID = "db_universidades_postgres"
 
 # Filename
 file_name = 'F_uni_de_moron'
+
 
 #Define airflow root folder
 
@@ -62,6 +64,7 @@ def sql_query():
 
     #csv path
     csv_path = os.path.join(air_root_folder, 'files/' + file_name + '.csv')
+
 
     #Open and read sql file
     with open(sql_path, "r") as file:
@@ -127,6 +130,7 @@ def pandas_process():
     #Save df final version in /dataset as a csv file
     df.to_csv(df_path)
 
+
 #Loading to S3
 def load_to_S3():
     pass
@@ -140,6 +144,7 @@ with DAG('F_uni_de_moron',
          default_args = default_args,
          catchup=False
         ) as dag:
+
         
         #First task: Extraction. (PostgresOperator could be used)
         opr_sql_query = PythonOperator(    

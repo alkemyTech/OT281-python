@@ -3,18 +3,6 @@ COMO: Analista de datos
 QUIERO: Crear una función Python con Pandas para cada universidad
 PARA: poder normalizar los datos de las mismas
 
-Criterios de aceptación: 
-Una funcion que devuelva un txt para cada una de las siguientes universidades con los datos normalizados:
-
-Universidad De Morón
-
-Universidad Nacional De Río Cuarto
-
-Datos Finales:
-
-age: int
-
-
 '''
 
 #Airflow Imports
@@ -29,6 +17,8 @@ import os
 from pathlib import Path
 import pandas as pd
 
+#Connection id for Postgres Database
+POSTGRES_CONN_ID = "db_universidades_postgres"
 
 #Connection id for Postgres Database
 POSTGRES_CONN_ID = "db_universidades_postgres"
@@ -39,6 +29,7 @@ file_name = 'F_uni_nacional_de_rio_cuarto'
 #Define airflow root folder
 
 air_root_folder = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
+
 
 # Logging Set Up
 logging.basicConfig(level=logging.INFO, datefmt= '%Y-%m-%d',
@@ -74,6 +65,7 @@ def sql_query():
 
     #csv path
     csv_path = os.path.join(air_root_folder, 'files/' + file_name + '.csv')
+
 
     #Open and read sql file
     with open(sql_path, "r") as file:
