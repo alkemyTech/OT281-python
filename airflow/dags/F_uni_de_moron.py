@@ -1,7 +1,7 @@
 '''
 COMO: Analista de datos
-QUIERO: Implementar SQL Operator
-PARA: tomar los datos de las bases de datos en el DAG
+QUIERO: Crear una función Python con Pandas para cada universidad
+PARA: poder normalizar los datos de las mismas
 
 '''
 
@@ -11,10 +11,11 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 # Other imports
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import logging
 import os
 from pathlib import Path
+import pandas as pd
 
 
 
@@ -24,9 +25,14 @@ POSTGRES_CONN_ID = "db_universidades_postgres"
 # Filename
 file_name = 'F_uni_de_moron'
 
+
+#Define airflow root folder
+
+air_root_folder = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
+
 logging.basicConfig(level=logging.INFO, datefmt= '%Y-%m-%d',
                     format='%(asctime)s - %(name)s - %(message)s') 
-
+             
 
 logger = logging.getLogger('F_uni_de_moron')
 
@@ -53,11 +59,12 @@ def sql_query():
     logging.info('Exporting query to file')
 
     #Sql path
-    sql_path = os.path.join(os.path.dirname(os.path.normpath(__file__)).rstrip('/dags'), 'include/'+ file_name+ '.sql')
+    sql_path = os.path.join(air_root_folder, 'include/'+ file_name+ '.sql')
     
 
     #csv path
-    csv_path = os.path.join(os.path.dirname(os.path.normpath(__file__)).rstrip('/dags'), 'files/' + file_name + '.csv')
+    csv_path = os.path.join(air_root_folder, 'files/' + file_name + '.csv')
+
 
     #Open and read sql file
     with open(sql_path, "r") as file:
@@ -69,7 +76,60 @@ def sql_query():
 
 #Pandas processing and Transformation
 def pandas_process():
-    pass
+    '''
+    This function uses pandas to normalize data in .csv and stores it in /dataset folder as a .csv
+    '''
+    #Load university dataframe
+    df_uni = pd.read_csv(os.path.join(air_root_folder, 'files/' + file_name + '.csv'))
+    
+    #Applied no lowercase, no extra spaces, no hyphens in specific cols
+    special_cols = ['university', 'career', 'last_name', 'email', 'location']
+    for name_col in special_cols:
+        df_uni[name_col] = df_uni[name_col].astype(str).apply(lambda x: x.lower()).apply(lambda x: x.strip()).apply(lambda x:x.replace('-', ' '))
+
+    #Change gender col to category type
+    df_uni["gender"] = df_uni["gender"].map({'M' : 'male', 'F' : 'female'})
+    df_uni["gender"] = df_uni["gender"].astype('category')
+
+    #Inscription date
+    df_uni["inscription_date"] = pd.to_datetime(df_uni["inscription_date"],infer_datetime_format=True)
+    df_uni['inscription_date'] = df_uni['inscription_date'].astype(str)
+
+    #Age
+    df_uni['birth_date'] = pd.to_datetime(df_uni['birth_date'],infer_datetime_format=True)
+    def calc_age(birth_col):
+        '''
+        Given a birth date columns it returns the years according to current date
+        '''
+        today = pd.to_datetime(date.today())  # convert today to a pandas datetime
+        return (today - birth_col) / pd.Timedelta(days=365.25)  # divide by days to get years
+
+    df_uni['age'] = calc_age(df_uni['birth_date'])
+    df_uni['age']= df_uni['age'].astype(int)
+
+    #Load postal code dataframe
+    df_pc = pd.read_csv(air_root_folder + '/assets/codigos_postales.csv')
+    
+    #working with postal_code
+    df_pc.columns = ['postal_code', 'location']
+    df_pc['location'] = df_pc['location'].apply(lambda x: x.lower()).apply(lambda x: x.strip()).apply(lambda x:x.replace('-', ' '))
+
+    #merge df_uni with df_pc on 'postal_code'
+    df = df_uni.merge(df_pc, how="left", on='postal_code', copy="false")
+    df.drop('location_x', axis = 1, inplace = True)
+    df.rename(columns = {'location_y':'location'}, inplace = True)
+
+    #We keep just with cols of interest
+    df = df[['university', 'career', 'inscription_date', 'last_name', 'gender', 'age', 'postal_code', 'location', 'email']]
+    
+    #Dataset path
+    df_path = air_root_folder + '/datasets/' + file_name + '.csv'
+    #Dataset folder creation
+    os.makedirs(os.path.dirname(df_path), exist_ok=True)
+
+    #Save df final version in /dataset as a csv file
+    df.to_csv(df_path)
+
 
 #Loading to S3
 def load_to_S3():
@@ -84,7 +144,6 @@ with DAG('F_uni_de_moron',
          default_args = default_args,
          catchup=False
         ) as dag:
-
 
         
         #First task: Extraction. (PostgresOperator could be used)
