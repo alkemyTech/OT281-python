@@ -18,7 +18,6 @@ from pathlib import Path
 import pandas as pd
 
 
-
 #Connection id for Postgres Database
 POSTGRES_CONN_ID = "db_universidades_postgres"
 
