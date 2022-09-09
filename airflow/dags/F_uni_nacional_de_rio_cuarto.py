@@ -2,7 +2,6 @@
 COMO: Analista de datos
 QUIERO: Utilizar un operador creado por la comunidad
 PARA: poder subir el txt creado por el operador de Python al S3
-
 '''
 
 #Airflow Imports
@@ -34,6 +33,7 @@ file_name = 'F_uni_nacional_de_rio_cuarto'
 #Define airflow root folder
 
 air_root_folder = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
+
 
 # Logging Set Up
 logging.basicConfig(level=logging.INFO, datefmt= '%Y-%m-%d',
@@ -144,6 +144,7 @@ def pandas_process():
     
     #Log
     logger.info('Saving file')
+
 
     #Save df final version in /dataset as a csv file
     df.to_csv(df_path)
