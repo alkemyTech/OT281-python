@@ -11,6 +11,7 @@ from datetime import timedelta, datetime
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 #manager Folders
 import os
 #Pandas from datafrrame
@@ -32,16 +33,20 @@ formatter = logging.Formatter('%(asctime)s-%(levelname)s-%(message)s', datefmt='
 sh.setFormatter(formatter)
 
 
-#Path
-current_dir = os.path.dirname(os.path.normpath(__file__))
-ROOT_FOLDER = os.path.abspath(os.path.join(current_dir, os.pardir))
 
-#this function open csvfile and transform
-def open_csv():
-    file_name = "H_uni_de_buenos_aires.csv"
-    filename = os.path.join(ROOT_FOLDER,'/files/'+file_name)
-    H_uni_de_buenos_aires = pd.read_csv(filename)
-    return True
+################## Path #############################
+CURRENT_DIR = os.path.dirname(os.path.normpath(__file__))
+ROOT_FOLDER = os.path.abspath(os.path.join(CURRENT_DIR, os.pardir))
+FILE_NAME = 'H_uni_de_buenos_aires'
+
+################## Conexion #############################
+#Connection id for Postgres Database
+POSTGRES_CONN_ID = "db_universidades_postgres"
+#Connection id for S3
+S3_CONN_ID = "universidades_S3"
+#Bucket name
+S3_BUCKET_NAME = "cohorte-agosto-38d749a7"
+
 
 #this function open the sqlFile
 def sql_reader(file):
@@ -54,21 +59,17 @@ def extract_data ():
    file_sql = "H_uni_de_buenos_aires.sql"
 
   #read .sql query
-   sql_query = sql_reader(f'{ROOT_FOLDER}/include/{file_sql}')
+   sql_query = sql_reader(f'{ROOT_FOLDER}/include/{file_sql}') #
 
    logging.debug(f"The query use {sql_query}")
 
-  #PostgresHook instance
-   pg_hook = PostgresHook(
-            postgres_conn_id = 'db_universidades_postgres',
-            )
-   #conect to the db
-   pg_conn = pg_hook.get_conn()
-   #csv with raw data
+   # PostgresHook instance
+   pg_hook = PostgresHook.get_hook(POSTGRES_CONN_ID)
 
+
+   #csv with raw data
    file_name="H_uni_de_buenos_aires.csv" 
    filename = f'{ROOT_FOLDER}/files/{file_name}' #
-
    new_sql_query= "COPY ( "+sql_query+" ) TO STDOUT WITH CSV HEADER"  
     # remove " ; " 
    new_sql_query=new_sql_query.replace(";","")
@@ -131,6 +132,7 @@ def transform_data_pd(csv, csv_transform):
      ################################
     df['last_name'] = df['last_name'].apply(lambda x: x.replace('-',' ')).apply(lambda x: x.lower())
      ################################
+
     df["birth_date"] = pd.to_datetime(df["birth_date"], format='%Y%b%d', errors='ignore')
     df['birth_date'] = df['birth_date'].apply(    # Fix format
          lambda x: x.split('-')[-1] + '-' + x.split('-')[-2] + '-'  + '19' + x.split('-')[-3]
@@ -164,6 +166,29 @@ def transform_data_pd(csv, csv_transform):
 
      #Return the dataset directory to the next task
     return dataset_dir
+
+
+################## LOAD DATA ##########################################################################
+
+def load_data(file_name):
+    """Upload a file to an S3 bucket
+     Args:
+         file_name (str): File to upload
+         object_name (str): S3 object name. If not specified then file_name is used
+    return True if file was uploaded, else False
+     """
+
+    #Get the file_path (should be the only Xcom value in the list)
+    file_path = ROOT_FOLDER + "/datasets/" + file_name
+    # Instantiate the S3 Hook
+    s3_hook = S3Hook(S3_CONN_ID)
+    # Load dataset to S3
+    s3_hook.load_file(
+        filename=file_path,
+        key=FILE_NAME + ".csv",
+        bucket_name=S3_BUCKET_NAME,
+        replace=True
+    )
 
 ################## DAG CONFIG #############################
 
@@ -205,8 +230,14 @@ with DAG(
 
  
         #3 - Load Data
-        #uba_load_data=PythonOperator(
-        #)
+        uba_load_data=PythonOperator(
+                  task_id='load_data_H_universidad_del_cine',
+                  python_callable=load_data,
+                  op_kwargs={
+                         'file_name': 'H_uni_de_buenos_aires.csv'
+                         }
+        )
 
-        uba_select_query #>> uba_pandas_transform 
-        #>> uba_load_data
+
+        uba_select_query >> uba_pandas_transform >> uba_load_data
+
