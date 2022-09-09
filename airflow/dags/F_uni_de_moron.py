@@ -1,14 +1,15 @@
 '''
 COMO: Analista de datos
-QUIERO: Crear una función Python con Pandas para cada universidad
-PARA: poder normalizar los datos de las mismas
-
+QUIERO: Utilizar un operador creado por la comunidad
+PARA: poder subir el txt creado por el operador de Python al S3
 '''
 
 #Airflow Imports
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+
 
 # Other imports
 from datetime import datetime, timedelta, date
@@ -21,14 +22,20 @@ import pandas as pd
 #Connection id for Postgres Database
 POSTGRES_CONN_ID = "db_universidades_postgres"
 
+#Connection id for S3
+s3_id = 'universidades_S3'
+
+#Define bucket name
+s3_bucket = 'cohorte-agosto-38d749a7'
+
 # Filename
 file_name = 'F_uni_de_moron'
-
 
 #Define airflow root folder
 
 air_root_folder = os.path.dirname(os.path.normpath(__file__)).rstrip('/dags')
 
+#Log Config
 logging.basicConfig(level=logging.INFO, datefmt= '%Y-%m-%d',
                     format='%(asctime)s - %(name)s - %(message)s') 
              
@@ -81,6 +88,9 @@ def pandas_process():
     #Load university dataframe
     df_uni = pd.read_csv(os.path.join(air_root_folder, 'files/' + file_name + '.csv'))
     
+    #Log
+    logger.info('Pandas transformation in process')
+
     #Applied no lowercase, no extra spaces, no hyphens in specific cols
     special_cols = ['university', 'career', 'last_name', 'email', 'location']
     for name_col in special_cols:
@@ -125,6 +135,10 @@ def pandas_process():
     df_path = air_root_folder + '/datasets/' + file_name + '.csv'
     #Dataset folder creation
     os.makedirs(os.path.dirname(df_path), exist_ok=True)
+    
+    #Log
+    logger.info('Saving file')
+
 
     #Save df final version in /dataset as a csv file
     df.to_csv(df_path)
@@ -132,7 +146,23 @@ def pandas_process():
 
 #Loading to S3
 def load_to_S3():
-    pass
+    '''
+    This function loads the file in a S3 bucket
+    '''
+    logger.info('Loading started')
+
+    # Instantiate the S3 Hook
+    s3_hook = S3Hook(s3_id)
+
+    s3_hook.load_file(
+        filename= air_root_folder + '/datasets/' + file_name + '.csv',
+        key= file_name + ".csv",
+        bucket_name= s3_bucket,
+        replace=True
+    )
+    #Log
+    logger.info('The file was succesfully load into s3')
+    
 
 
 #Instantiate DAG

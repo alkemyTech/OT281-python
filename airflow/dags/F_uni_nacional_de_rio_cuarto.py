@@ -145,9 +145,9 @@ def pandas_process():
     #Log
     logger.info('Saving file')
 
-
     #Save df final version in /dataset as a csv file
     df.to_csv(df_path)
+
 
 #Loading to S3
 def load_to_S3():
