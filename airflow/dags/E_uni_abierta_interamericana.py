@@ -15,7 +15,7 @@ from airflow import DAG
 
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-#from airflow.hooks.S3_hook import S3Hook
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 
 #Logs config
@@ -121,7 +121,16 @@ def transform_data():
 
 #Upload data to AWS S3
 def upload_to_s3():
-    pass
+    DIR = os.path.join(os.path.dirname(os.path.normpath(__file__)).rstrip('/dags'))
+    
+    key = 'E_uni_abierta_interamericana.csv'
+    bucket_name = 'cohorte-agosto-38d749a7'
+    
+    hook = S3Hook('universidades_S3')
+    hook.load_file(filename= DIR+'/datasets/E_uni_abierta_interamericana.csv',
+        key=key,
+        bucket_name=bucket_name,
+        replace =True)
 
 
 with DAG(
