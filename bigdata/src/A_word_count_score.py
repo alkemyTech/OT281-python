@@ -5,6 +5,8 @@ from datetime import datetime
 from pathlib import Path
 from statistics import mean
 from typing import Counter
+from operator import itemgetter
+from itertools import groupby
 import os
 import re
 import xml.etree.ElementTree as ET
@@ -35,19 +37,19 @@ def get_score_and_words(data):
     except:
         return
     body = data.attrib['Body']
-    body = re.findall('(?<!\S)[A-Za-z]+(?!\S)', body)
-    words = len(body)
+    body = re.findall('(?<!\S)[A-Za-z]+(?!\S)|(?<!\S)[A-Za-z]+(?=:(?!\S))', body)
+    words = len(Counter(body))
     return score, words
 
-def score_words_average():
+def score_words_average(data1, data2):
     pass
 
 def mapper(data):
     scored = list(map(get_score_and_words, data))
     scored = list(filter(None, scored))
     scored = list(map(lambda tuple: list(tuple), scored))
-    
-    return scored
+    score_avg = reduce(score_words_average, scored)
+    return score_avg
 
 if __name__ == '__main__':
     
