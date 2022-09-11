@@ -1,12 +1,9 @@
 """ This file answers the word count in a post vs it score.
 """
 # Import libraries
-from datetime import datetime
 from pathlib import Path
 from statistics import mean
 from typing import Counter
-from operator import itemgetter
-from itertools import groupby
 import os
 import re
 import xml.etree.ElementTree as ET
@@ -41,10 +38,10 @@ def get_score_and_words(data):
     words = len(Counter(body))
     return {score: [words]}
 
-def score_words_average(data1, data2):
+def score_words_to_average(data1, data2):
     for key, value in data2.items():
         if key in data1.keys():
-            data1[key].append(value) # it adds actually a list not an int
+            data1[key] += value
         else:
             data1.update({key: value})
     return data1
@@ -52,9 +49,21 @@ def score_words_average(data1, data2):
 def mapper(data):
     scored = list(map(get_score_and_words, data))
     scored = list(filter(None, scored))
-    # scored = list(map(lambda tuple: list(tuple), scored))
-    score_avg = reduce(score_words_average, scored)
+    score_avg = reduce(score_words_to_average, scored)
     return score_avg
+
+def average(data):
+    for key, value in data.items():
+        data.update({key: mean(value)})
+    return data
+
+def reduced_dicts(data1, data2):
+    for key, value in data2.items():
+        if key in data1.keys():
+            data1[key] = (value + data1[key]) / 2
+        else:
+            data1.update({key: value})
+    return data1
 
 if __name__ == '__main__':
     
@@ -63,5 +72,6 @@ if __name__ == '__main__':
     root = tree.getroot()
     data_chunks = chunckify(root, 50)
     mapped = list(map(mapper, data_chunks))
-    mapped = list(filter(None, mapped))
+    averaged = list(map(average, mapped))
+    reduced = reduce(reduced_dicts, averaged)
     print(mapped)
