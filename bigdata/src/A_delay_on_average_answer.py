@@ -1,5 +1,4 @@
-""" This file answers the delay on average answer for each post.
-"""
+""" This file answers the delay on average answer for each post."""
 # Import libraries
 from pathlib import Path
 from statistics import mean
@@ -26,8 +25,8 @@ XML_FILE = os.path.join(XML_FOLDER,'posts.xml')
 """
 
 # Helper functions to map and reduce
-
 def get_delay_time(data):
+    """ This function takes the data from the root and returns the delay (in days) for each post."""
     try:
         accepted_answer = data.attrib['AcceptedAnswerId']
     except:
@@ -40,6 +39,7 @@ def get_delay_time(data):
     return delay.days
 
 def mapper(data):
+    """ This function maps the get_delay_time data and returns the average delay time."""
     delayed = list(map(get_delay_time, data))
     delayed = list(filter(None, delayed))
     try:
@@ -49,6 +49,7 @@ def mapper(data):
     return average
 
 def delayed_average(data1, data2):
+    """ This function takes two values and average them."""
     data1 = (data1 + data2)/2
     return data1
 
@@ -59,6 +60,10 @@ if __name__ == '__main__':
     tree = ET.parse(XML_FILE)
     root = tree.getroot()
     data_chunks = chunckify(root, 50)
+
+    # Apply MapReduce functionality
     mapped = list(map(mapper, data_chunks))
     reduced = reduce(delayed_average, mapped)
+
+    # Print the average delay on answer
     print(f'The average delay on answer each post is: {reduced:.2} days')
