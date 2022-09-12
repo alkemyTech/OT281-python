@@ -122,7 +122,7 @@ def pandas_process():
     #working with postal_code
     df_pc.columns = ['postal_code', 'location']
     df_pc['location'] = df_pc['location'].apply(lambda x: x.lower()).apply(lambda x: x.strip()).apply(lambda x:x.replace('-', ' '))
-
+    df_pc.drop_duplicates(subset=['location'], keep="first", inplace=True)
     #merge df_uni with df_pc on 'postal_code'
     df = df_uni.merge(df_pc, how="left", on='postal_code', copy="false")
     df.drop('location_x', axis = 1, inplace = True)

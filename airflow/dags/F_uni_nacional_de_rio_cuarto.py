@@ -40,7 +40,7 @@ logging.basicConfig(level=logging.INFO, datefmt= '%Y-%m-%d',
                     format='%(asctime)s - %(name)s - %(message)s')
 
 
-logger = logging.getLogger("F_uni_nacional_de_rio_cuarto")
+logger = logging.getLogger(__name__)
 
 
 #Default settings applied to all tasks
@@ -127,7 +127,8 @@ def pandas_process():
     #working with postal_code
     df_pc.columns = ['postal_code', 'location']
     df_pc['location'] = df_pc['location'].apply(lambda x: x.lower()).apply(lambda x: x.strip()).apply(lambda x:x.replace('-', ' '))
-
+    df_pc.drop_duplicates(subset=['location'], keep="first", inplace=True)
+    
     #merge df_uni with df_pc on 'location'
     df = df_uni.merge(df_pc, how="left", on='location', copy="false")
     df.drop('postal_code_x', axis = 1, inplace = True)
