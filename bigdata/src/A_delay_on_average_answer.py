@@ -45,7 +45,7 @@ def mapper(data):
     try:
         average = mean(delayed)
     except:
-        average = 0
+        return
     return average
 
 def delayed_average(data1, data2):
@@ -63,6 +63,7 @@ if __name__ == '__main__':
 
     # Apply MapReduce functionality
     mapped = list(map(mapper, data_chunks))
+    mapped = list(filter(None, mapped))
     reduced = reduce(delayed_average, mapped)
 
     # Print the average delay on answer
