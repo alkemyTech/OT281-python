@@ -1,0 +1,10 @@
+#Dag id
+dag_id: 'F_DD_uni_nacional_de_rio_cuarto'
+#File name
+FILE_NAME: 'F_uni_nacional_de_rio_cuarto'
+#Dynamic dag file_name
+DD_file_name: 'F_DD_uni_nacional_de_rio_cuarto'
+#Schedule interval
+schedule_interval: '@hourly'
+#DAG description
+dag_description: 'DAG for Universidad Nacional de Rio Cuarto'
