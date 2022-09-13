@@ -8,10 +8,17 @@ from functools import reduce
 import itertools
 from itertools import chain
 from collections import ChainMap
-
-
 import os
 import sys
+
+import os
+# Import logging module
+import logging.config
+import logging
+# Set logging path and init logging config
+filename = os.path.join(os.path.dirname(__file__), 'logs/C_logger.cfg')
+logging.config.fileConfig(filename)
+
 
 path_librerias=os.path.join(os.path.dirname(__file__), '../libs/')
 sys.path.insert(0, path_librerias)
