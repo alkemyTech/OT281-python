@@ -16,20 +16,22 @@ import os
 import logging.config
 import logging
 # Set logging path and init logging config
-filename = os.path.join(os.path.dirname(__file__), 'logs/C_logger.cfg')
+filename = os.path.join(os.path.dirname(__file__), '../logs/C_logger.cfg')
 logging.config.fileConfig(filename)
 
 
 
-
+# Set path to local libraries
 path_librerias=os.path.join(os.path.dirname(__file__), '../libs/')
 sys.path.insert(0, path_librerias)
 
+#Import chunckify from local libraries
 from chunckify import chunckify
 
 
 # IMPORT posts.xml and make a tree object instance
 path_to_postsxml=os.path.join(os.path.dirname(__file__), '../datasets/posts.xml')
+logging.debug("The xml file was imported succesfuly from {}".format(path_to_postsxml))
 tree = ET.parse(path_to_postsxml)
 root = tree.getroot()
 
@@ -76,7 +78,7 @@ def get_Post(data):
     body= list(filter(None,body))
     # count the number of words in each post
     counter_palabras = len(body)
-    
+    ##logging.debug("get_Post return tuple ({},{})".format(postID,counter_palabras))
     
     
     return {postID:counter_palabras}
@@ -85,7 +87,9 @@ def get_Post(data):
 # STEPS TO GET DICT WITH PARENT_ID vs COUNT OF TIMES THAT IS LISTED
 #Get chunks of data to process
 data_chunks = chunckify(root, 50)
+
 mapped1 = list(map(mapper1,data_chunks))
+logging.debug("mapped1 has run succesfully")
 #dict_posts_palabras = list(reduce(lambda a,b: a.update(b),mapped[:][1]))
 # Make dict with the ParentID and the times that it appears
 dict_ParentId=reduce(lambda x,y:Counter(x)+Counter(y),mapped1)
@@ -96,6 +100,7 @@ dict_ParentId=reduce(lambda x,y:Counter(x)+Counter(y),mapped1)
 #Get chunks of data to process
 data_chunks = chunckify(root, 50)
 mapped2 = list(map(mapper2,data_chunks))
+logging.debug("mapped2 has run succesfully")
 # TRANSFORM LIST OF DICT INTO A BIG DICT
 mapped2=list(itertools.chain.from_iterable(mapped2))
 postid_palabras = reduce(lambda d, src: d.update(src) or d, mapped2,{})
@@ -106,6 +111,7 @@ post_con_respuesta=list(dict_ParentId.keys())
 
 # Function to generate dict of postID and amount of word 
 def genera_palabras_dict(data,postid_palabras=postid_palabras):
+    ##logging.debug("genera_palabras_dict return dict {}:{}".format(data,postid_palabras[data]))
     return {data:postid_palabras[data]}
 
 # Generate list of dicts with postID and amount of word    
@@ -122,9 +128,10 @@ def relacion(data,postid_palabras_limpio=postid_palabras_limpio,dict_ParentId=di
         return (data,relacion_porc)
         # Case post words count is 0 will ignore it
     except ZeroDivisionError:
+        logging.debug("ZeroDivisionError in relacion in post {}".format(dict_ParentId))    
         return 
     
 # Get a list of tuples with post ID and relationship    
 lista_relacion=list(map(relacion,post_con_respuesta))
-
+logging.debug("Corre ended succesfully with this result (only irst 20 shown): {}".format(lista_relacion[0:20]))    
 print(lista_relacion)
