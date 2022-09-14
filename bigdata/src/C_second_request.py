@@ -27,7 +27,7 @@ sys.path.insert(0, path_librerias)
 
 #Import chunckify from local libraries
 from chunckify import chunckify
-
+from C_export_to_csv import export_to_csv
 
 # IMPORT posts.xml and make a tree object instance
 path_to_postsxml=os.path.join(os.path.dirname(__file__), '../datasets/posts.xml')
@@ -133,5 +133,11 @@ def relacion(data,postid_palabras_limpio=postid_palabras_limpio,dict_ParentId=di
     
 # Get a list of tuples with post ID and relationship    
 lista_relacion=list(map(relacion,post_con_respuesta))
-logging.debug("Corre ended succesfully with this result (only irst 20 shown): {}".format(lista_relacion[0:20]))    
+logging.debug("Code ended succesfully with this result (only irst 20 shown): {}".format(lista_relacion[0:20]))    
 print(lista_relacion)
+
+
+fields=['postid','wordcountvsanswers']
+fromlist=lista_relacion
+filename='C_second_request.csv'
+export_to_csv(fields,fromlist,filename)

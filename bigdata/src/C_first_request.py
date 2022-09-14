@@ -27,6 +27,9 @@ sys.path.insert(0, path_librerias)
 
 #Import chunckify from local libraries
 from chunckify import chunckify
+from C_export_to_csv import export_to_csv
+
+
 
 
 # IMPORT posts.xml and make a tree object instance
@@ -127,7 +130,14 @@ def sort_data(data):
 
 top_post_answered = sort_data(lista_posts_limpia)
 
-top_10_post_answered=top_post_answered[:9]
+top_10_post_answered=top_post_answered[:10]
 logging.debug("Code has run succesfully")
 logging.debug("Output: {}".format(top_10_post_answered))
 print(top_10_post_answered)
+
+
+fields=['Post_id','Count_of_answers']
+fromlist=top_10_post_answered
+filename='C_first_request.csv'
+export_to_csv(fields,fromlist,filename)
+

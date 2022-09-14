@@ -22,9 +22,9 @@ logging.config.fileConfig(filename)
 
 path_librerias=os.path.join(os.path.dirname(__file__), '../libs/')
 sys.path.insert(0, path_librerias)
-
+# Import local libraries
 from chunckify import chunckify
-
+from C_export_to_csv import export_to_csv
 
 # IMPORT posts.xml and make a tree object instance
 path_to_postsxml=os.path.join(os.path.dirname(__file__), '../datasets/posts.xml')
@@ -108,6 +108,12 @@ lista_owner=list(map(get_top_accepted_owner,out_parents_limpia))
 lista_owner_limpia= list(filter(None,lista_owner))
 #lista_owner_limpia=list(itertools.chain(*lista_owner_limpia))
 # TOP 10 OWNERID that has answered a top question (top because has a lot of favorites points)
-lista_owner_limpia[:9]
+lista_owner_limpia[:10]
 
-print(lista_owner_limpia[:9])
+print(lista_owner_limpia[:10])
+
+
+fields=['Owner_list']
+fromlist=lista_owner_limpia[:10]
+filename='C_third_request.csv'
+export_to_csv(fields,fromlist,filename)
