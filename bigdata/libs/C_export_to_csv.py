@@ -1,11 +1,13 @@
-import os
-import csv
 
 def export_to_csv(fields,fromlist,filename):
 # Function to export data to csv
 
+    import os
+    
+    import pandas as pd
+
     csv_path=os.path.join(os.path.dirname(__file__), '../output/')
-    with open(csv_path+filename,'w') as f:
-     write = csv.writer(f)
-     write.writerow(fields)
-     write.writerows(fromlist)
+    
+    df = pd.DataFrame(fromlist,columns=fields)
+    df.to_csv(csv_path+filename, index=False)
+
