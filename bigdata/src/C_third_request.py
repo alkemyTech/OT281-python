@@ -16,7 +16,7 @@ import os
 import logging.config
 import logging
 # Set logging path and init logging config
-filename = os.path.join(os.path.dirname(__file__), 'logs/C_logger.cfg')
+filename = os.path.join(os.path.dirname(__file__), '../logs/C_logger.cfg')
 logging.config.fileConfig(filename)
 
 
@@ -28,6 +28,7 @@ from chunckify import chunckify
 
 # IMPORT posts.xml and make a tree object instance
 path_to_postsxml=os.path.join(os.path.dirname(__file__), '../datasets/posts.xml')
+logging.debug("xml file imported successfully from: {}".format(path_to_postsxml))    
 tree = ET.parse(path_to_postsxml)
 root = tree.getroot()
 
@@ -44,6 +45,7 @@ def get_post_favorites(data):
     try:       
         favorite_count=data.attrib['FavoriteCount']
         post_id=data.attrib['Id']       
+        ## logging.debug("get_post_favorites returned tuple: ({},{})".format(post_id,favorite_count))
         return (post_id,int(favorite_count))
     except:
             return
@@ -53,6 +55,7 @@ def runner(data):
 # Function to get a clean list of tuples with the Id Post and its favorite Value
     out=list(map(get_post_favorites,data))
     out_limpia= list(filter(None,out))
+    ## logging.debug("runner output: {}".format(out_limpia))
     return out_limpia
 
 def devolver_top_post(out):
@@ -62,6 +65,7 @@ def devolver_top_post(out):
     tuple_top200=reduce(sort_data,out)[:200]
     for i in tuple_top200:
         top200.append(i[0])
+    ## logging.debug("devolver_top_post returne {}".format(top200))
     return top200
 
 
@@ -89,6 +93,7 @@ top200=devolver_top_post(out)
 def get_top_accepted_owner(data,top200=top200):
 # Function to return a list of the owners of answer that were accepted in each of the top200 questions
         if data[0] in top200:
+            ## logging.debug("get_top_accepted_owner returned {}".format(data[1]))
             return data[1]
     
 
