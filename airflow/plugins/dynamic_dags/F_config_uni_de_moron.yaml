@@ -1,0 +1,10 @@
+#Dag id
+dag_id: 'F_DD_uni_de_moron'
+#File name
+FILE_NAME: 'F_uni_de_moron'
+#Dynamic dag file_name
+DD_file_name: 'F_DD_uni_de_moron'
+#Schedule interval
+schedule_interval: '@hourly'
+#DAG description
+dag_description: 'DAG for Universidad de Moron'
