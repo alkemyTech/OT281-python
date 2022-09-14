@@ -48,10 +48,10 @@ def mapper(data):
         return
     return average
 
-def delayed_average(data1, data2):
-    """ This function takes two values and average them."""
-    data1 = (data1 + data2)/2
-    return data1
+def delayed_average(data):
+    """ This function calculates the average on the final dataset."""
+    data = sum(data)/len(data)
+    return data
 
 
 if __name__ == '__main__':
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     # Apply MapReduce functionality
     mapped = list(map(mapper, data_chunks))
     mapped = list(filter(None, mapped))
-    reduced = reduce(delayed_average, mapped)
+    averaged = delayed_average(mapped)
 
     # Print the average delay on answer
-    print(f'The average delay on answer each post is: {reduced:.2} days')
+    print(f'The average delay on answer each post is: {reduced:.3} days')
