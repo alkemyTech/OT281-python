@@ -48,7 +48,7 @@ def get_PostID_and_answer(data):
         
     except:
         return
-    
+    ## logging.debug("The answers_id value in get_PostID_and_answer is {}".format(answers_id))
     return answers_id
 
 
@@ -60,7 +60,7 @@ def get_accepted_answer(data):
         accepted_answers_id = data.attrib['AcceptedAnswerId']
     except:
         return
-    
+    ##logging.debug("The answers_id value from get_accepted_answer is: {}".format(answers_id))
     return answers_id
 
 
@@ -72,7 +72,7 @@ def runner_1(data):
     
     a_limpia= list(filter(None,a))
     
-
+    ##logging.debug("The a_limpia value is {}".format(a_limpia))
     return a_limpia
 
 def runner_2(data):
@@ -81,7 +81,7 @@ def runner_2(data):
     b=list(map(get_accepted_answer,data))
     
     b_limpia= list(filter(None,b))
-
+    ##logging.debug("The a_limpia value is {}".format(b_limpia))
     return b_limpia
 
 #Get chunks of data to process
@@ -98,7 +98,7 @@ posts_answered= list(map(runner_1,data_chunks))
 
 # Get a Counter object with the times that every post was answered
 posts_answered_countofanswers=reduce(lambda x,y:Counter(x)+Counter(y),posts_answered)
-
+##logging.debug("The posts_answered_countofanswers value is {}".format(posts_answered_countofanswers))
 
 
 def get_top_answered_accepted_post(aceptedanswers,data=posts_answered_countofanswers):
@@ -107,12 +107,13 @@ def get_top_answered_accepted_post(aceptedanswers,data=posts_answered_countofans
     lista_posts=[]
     
     if data[aceptedanswers]:
+        ##logging.debug("The tuple value is {},{}".format(aceptedanswers,data[aceptedanswers]))
         return aceptedanswers,data[aceptedanswers]
 
 
 # Get a list with tuples with the posts with accepted answers and its amount of answers
 lista_posts=list(map(get_top_answered_accepted_post,posts_accepted_answers))
-
+logging.debug("List of posts succesfully obtained ")
 
 # Clean list (remove None values)
 lista_posts_limpia= list(filter(None,lista_posts))
@@ -127,5 +128,6 @@ def sort_data(data):
 top_post_answered = sort_data(lista_posts_limpia)
 
 top_10_post_answered=top_post_answered[:9]
-
+logging.debug("Code has run succesfully")
+logging.debug("Output: {}".format(top_10_post_answered))
 print(top_10_post_answered)
