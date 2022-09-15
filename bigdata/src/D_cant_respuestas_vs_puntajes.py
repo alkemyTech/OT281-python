@@ -7,20 +7,24 @@
         The intervals include start boundary and exclude end boundary.
         Eg: - "0-1" interval include only posts with 0 answers.
             - "5-10" interval include posts with 5,6,7,8 and 9 answers.
-    This script uses a method from 'chunckify.py' script located in 'libs' folder, so in order to run this,
-    you must do it as a module with "python -m" or set PYTHONPATH env variable.
 '''
 
 #Imports
 from functools import reduce
+import logging
+from logging import config
 import os
-from unicodedata import name
+import sys
 import xml.etree.ElementTree as ET
 import pandas as pd
-from ..libs.chunckify import chunckify
 
 #Get the root folder (project folder)
 ROOT_FOLDER = os.path.dirname(os.path.dirname(os.path.normpath(__file__)))
+#Add root folder to sys.path (needed for relative imports)
+sys.path.insert(0, ROOT_FOLDER)
+#Import chunkckify from libs folder
+from libs.chunckify import chunckify
+
 #Get the xml path
 XML_PATH = os.path.join(ROOT_FOLDER, 'datasets', 'posts.xml')
 #Get filename (without extension)
@@ -31,6 +35,12 @@ OUTPUT_CSV_PATH = os.path.join(ROOT_FOLDER, 'output', FILENAME + '.csv')
 #Define interval boundaries
 INTERVAL_BOUNDARIES = [0, 1, 2, 5, 10, 25, 50, 100, 200, 500, 1000]
 #INTERVAL_BOUNDARIES = [0, 5, 50, 100, 200]
+
+#Logger setup from .cfg file
+logging.config.fileConfig(
+    f'{ROOT_FOLDER}/logs/D_logger.cfg'
+)
+logger = logging.getLogger("root")
 
 #Methods
 def check_is_question(data):
@@ -162,6 +172,7 @@ def mapper(data):
         reduced = reduce(get_interval_avg_score, answer_interval_and_score)
     #If this chunk has not any valid post, return None
     except:
+        logger.warning("This chunk doesn't have any valid post.")
         return
     #Return resulting dictionary
     return reduced
@@ -194,10 +205,13 @@ def map_reduce(root, csv_path):
     data_chunks = chunckify(root, 50)
     #Map the data chunks with main mapper method
     mapped = list(map(mapper, data_chunks))
+    logger.info("Mapped chunks successfully.")
     #Filter not valid chunks
     mapped = list(filter(None, mapped))
+    logger.info("Filtered empty chunks.")
     #Reduce chunks into a single dictionary
     reduced = reduce(get_interval_avg_score, mapped)
+    logger.info("Data reduced successfully.")
     #Create datadrame from that dictionary
     df = pd.DataFrame(data=reduced.keys(), columns=["AnswerCountInterval"])
     df["AverageScore"] = reduced.values()
@@ -205,10 +219,17 @@ def map_reduce(root, csv_path):
     os.makedirs(os.path.dirname(csv_path), exist_ok=True)
     #Store it in given path
     df.to_csv(csv_path)
+    #Log
+    logger.info("Dataset successfully generated in " + csv_path)
 
 #This is called when this .py is run directly
 if __name__ == "__main__":
+    #Log
+    logger.info("Starting program...")
+    logger.info("Reading data from: " + XML_PATH)
     #Get the data from xml file
     root = read_xml(XML_PATH)
+    #Log
+    logger.info("Started mapReduce logic")
     #Process that data with mapReduce logic
     map_reduce(root, OUTPUT_CSV_PATH)
