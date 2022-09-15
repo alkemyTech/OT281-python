@@ -11,4 +11,4 @@ localidad as location,
 email  
 from rio_cuarto_interamericana rci 
 where univiersities  = 'Universidad-nacional-de-río-cuarto' 
-and to_date (inscription_dates, 'DD/Mon/YY')  between '01/09/2020' and '01/02/2021';
+and to_date (inscription_dates, 'YY/Mon/DD')  between '01/09/2020' and '01/02/2021';
