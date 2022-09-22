@@ -1,18 +1,26 @@
 #!/usr/bin/env python
 """reducer.py"""
 
+# TEST FILE TO CHECK HOW THE INPUT/OUTPUT WORKS
+
+
 from operator import itemgetter
 import sys
 
+'''
 current_word = None
 current_count = 0
 word = None
-
+'''
 # input comes from STDIN
+i=0
 for line in sys.stdin:
     # remove leading and trailing whitespace
+    i=+1
     line = line.strip()
-
+    print("THIS IS THE LINE NUMBER:{}",str(i))
+    print(line)
+'''
     # parse the input we got from mapper.py
     word, count = line.split('\t', 1)
 
@@ -38,3 +46,4 @@ for line in sys.stdin:
 # do not forget to output the last word if needed!
 if current_word == word:
     print ('%s\t%s' % (current_word, current_count))
+    '''
